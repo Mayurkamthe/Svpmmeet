@@ -1,0 +1,58 @@
+<footer class="bg-navy-900 text-navy-300 mt-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-full gradient-header flex items-center justify-center border border-gold-400/50">
+            <i class="fa-solid fa-graduation-cap text-gold-400"></i>
+          </div>
+          <div>
+            <div class="text-white font-display font-bold">SVPM Alumni</div>
+            <div class="text-navy-400 text-xs">Association</div>
+          </div>
+        </div>
+        <p class="text-sm leading-relaxed text-navy-400">
+          Connecting alumni of SVPM College of Engineering, fostering lifelong relationships and professional growth.
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/" class="hover:text-gold-400 transition flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-gold-600"></i>Home</a></li>
+          <li><a href="/events" class="hover:text-gold-400 transition flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-gold-600"></i>Events</a></li>
+          <li><a href="/alumni/directory" class="hover:text-gold-400 transition flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-gold-600"></i>Alumni Directory</a></li>
+          <li><a href="/auth/register" class="hover:text-gold-400 transition flex items-center gap-2"><i class="fa-solid fa-chevron-right text-xs text-gold-600"></i>Register</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h4>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-2">
+            <i class="fa-solid fa-location-dot text-gold-500 mt-0.5 w-4"></i>
+            <span><%= college.name %>,<br><%= college.location %></span>
+          </li>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-envelope text-gold-500 w-4"></i>
+            <a href="mailto:<%= college.email %>" class="hover:text-gold-400 transition"><%= college.email %></a>
+          </li>
+          <% if (college.website && college.website !== '#') { %>
+          <li class="flex items-center gap-2">
+            <i class="fa-solid fa-globe text-gold-500 w-4"></i>
+            <a href="<%= college.website %>" target="_blank" class="hover:text-gold-400 transition"><%= college.website %></a>
+          </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-navy-700 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-navy-500">
+      <span>&copy; <%= new Date().getFullYear() %> SVPM Alumni Association. All rights reserved.</span>
+      <span>Built with <i class="fa-solid fa-heart text-red-500"></i> for SVPM Community</span>
+    </div>
+  </div>
+</footer>

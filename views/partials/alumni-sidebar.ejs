@@ -1,0 +1,73 @@
+<!-- Alumni Sidebar -->
+<aside class="w-64 min-h-screen gradient-header flex flex-col">
+  <!-- Brand -->
+  <div class="p-5 border-b border-white/10">
+    <a href="/" class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-gold-400/50">
+        <i class="fa-solid fa-graduation-cap text-gold-400"></i>
+      </div>
+      <div>
+        <div class="text-white font-display font-bold text-sm leading-tight">SVPM Alumni</div>
+        <div class="text-navy-300 text-xs">Member Portal</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- User Card -->
+  <div class="p-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-full bg-white/10 border-2 border-gold-400/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+        <% if (user && user.avatar) { %>
+          <img src="<%= user.avatar %>" alt="" class="w-full h-full object-cover">
+        <% } else { %>
+          <i class="fa-solid fa-user text-navy-300"></i>
+        <% } %>
+      </div>
+      <div class="overflow-hidden">
+        <div class="text-white font-semibold text-sm truncate"><%= user ? user.name : 'Alumni' %></div>
+        <div class="text-navy-300 text-xs truncate"><%= user ? user.alumniId : '' %></div>
+        <% if (user && user.membershipStatus === 'approved') { %>
+          <span class="inline-block badge-life text-xs px-2 py-0.5 rounded-full font-bold mt-0.5">
+            <i class="fa-solid fa-star text-xs"></i> Life Member
+          </span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav Links -->
+  <nav class="flex-1 p-3 space-y-1">
+    <% const currentPath = locals.currentPath || ''; %>
+    <a href="/alumni/dashboard" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/dashboard' ? 'active' : '' %>">
+      <i class="fa-solid fa-gauge w-4 text-center"></i> Dashboard
+    </a>
+    <a href="/alumni/profile" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath.includes('/alumni/profile') ? 'active' : '' %>">
+      <i class="fa-solid fa-user w-4 text-center"></i> My Profile
+    </a>
+    <a href="/alumni/membership" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/membership' ? 'active' : '' %>">
+      <i class="fa-solid fa-id-card w-4 text-center"></i> Membership
+    </a>
+    <a href="/alumni/payments" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/payments' ? 'active' : '' %>">
+      <i class="fa-solid fa-receipt w-4 text-center"></i> Payments
+    </a>
+    <a href="/alumni/directory" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/directory' ? 'active' : '' %>">
+      <i class="fa-solid fa-address-book w-4 text-center"></i> Directory
+    </a>
+    <a href="/events" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm">
+      <i class="fa-solid fa-calendar-days w-4 text-center"></i> Events
+    </a>
+
+    <% if (user && user.membershipStatus === 'approved') { %>
+    <a href="/alumni/certificate" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gold-400 hover:text-gold-300 transition text-sm">
+      <i class="fa-solid fa-certificate w-4 text-center"></i> Certificate
+    </a>
+    <% } %>
+  </nav>
+
+  <!-- Logout -->
+  <div class="p-3 border-t border-white/10">
+    <a href="/auth/logout" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-red-400 hover:bg-red-500/10 transition text-sm">
+      <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Logout
+    </a>
+  </div>
+</aside>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',400:'#5f8dbe',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}},fontFamily:{display:['"Playfair Display"','Georgia','serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body{font-family:'Source Sans 3',system-ui,sans-serif;}
+    .gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}
+    .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.1);}
+    .badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}
+    .card-hover{transition:transform 0.2s,box-shadow 0.2s;}
+    .card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.1);}
+  </style>
+</head>
+<body class="bg-gray-50">
+<div class="flex min-h-screen">
+  <% locals.currentPath = '/alumni/dashboard'; %>
+  <%- include('../partials/alumni-sidebar') %>
+
+  <main class="flex-1 overflow-hidden">
+    <!-- Top Bar -->
+    <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-navy-800">Dashboard</h1>
+        <p class="text-gray-500 text-sm">Welcome back, <strong><%= user.name %></strong></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <% if (user.membershipStatus === 'approved') { %>
+        <span class="badge-life text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5">
+          <i class="fa-solid fa-star text-xs"></i> Life Member
+        </span>
+        <% } else if (user.membershipStatus === 'pending') { %>
+        <span class="bg-amber-100 text-amber-700 border border-amber-200 text-xs px-3 py-1.5 rounded-full font-semibold">
+          <i class="fa-solid fa-clock mr-1"></i> Membership Pending
+        </span>
+        <% } else { %>
+        <a href="/alumni/membership" class="bg-gold-500 hover:bg-gold-600 text-navy-900 text-xs font-bold px-3 py-1.5 rounded-full transition">
+          <i class="fa-solid fa-star mr-1"></i> Apply for Life Membership
+        </a>
+        <% } %>
+        <% if (!user.isVerified) { %>
+        <span class="bg-orange-100 text-orange-700 border border-orange-200 text-xs px-3 py-1.5 rounded-full font-semibold">
+          <i class="fa-solid fa-hourglass mr-1"></i> Awaiting Approval
+        </span>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="p-6 overflow-y-auto" style="max-height: calc(100vh - 73px)">
+
+      <!-- Flash Messages -->
+      <% if (locals.success_msg && success_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-check"></i><span><%= success_msg %></span></div>
+      <% } %>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <i class="fa-solid fa-id-badge text-blue-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 font-semibold">Alumni ID</span>
+          </div>
+          <div class="text-navy-800 font-bold text-lg font-mono"><%= user.alumniId || 'Pending' %></div>
+          <div class="text-gray-400 text-xs mt-1">Your unique ID</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <i class="fa-solid fa-graduation-cap text-emerald-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 font-semibold">Batch</span>
+          </div>
+          <div class="text-navy-800 font-bold text-xl"><%= user.profile?.passOutYear || 'N/A' %></div>
+          <div class="text-gray-400 text-xs mt-1"><%= user.profile?.branch || 'N/A' %></div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+              <i class="fa-solid fa-id-card text-purple-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 font-semibold">Membership</span>
+          </div>
+          <div class="font-bold text-base capitalize
+            <%= user.membershipStatus === 'approved' ? 'text-emerald-600' : user.membershipStatus === 'pending' ? 'text-amber-600' : 'text-gray-500' %>">
+            <%= user.membershipStatus === 'none' ? 'Not Applied' : user.membershipStatus %>
+          </div>
+          <div class="text-gray-400 text-xs mt-1">Life Membership</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <i class="fa-solid fa-receipt text-amber-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 font-semibold">Payments</span>
+          </div>
+          <div class="text-navy-800 font-bold text-xl"><%= payments.length %></div>
+          <div class="text-gray-400 text-xs mt-1">Transactions</div>
+        </div>
+      </div>
+
+      <!-- Grid: Quick Actions + Announcements -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-5">
+          <h3 class="font-bold text-navy-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-bolt text-gold-500"></i> Quick Actions
+          </h3>
+          <div class="space-y-2">
+            <a href="/alumni/profile/edit" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700">
+              <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-user-pen text-blue-600 text-xs"></i>
+              </div>
+              <span>Update Profile</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-300 text-xs"></i>
+            </a>
+            <a href="/alumni/membership" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-id-card text-emerald-600 text-xs"></i>
+              </div>
+              <span>Life Membership</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-300 text-xs"></i>
+            </a>
+            <a href="/alumni/directory" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700">
+              <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-address-book text-purple-600 text-xs"></i>
+              </div>
+              <span>Alumni Directory</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-300 text-xs"></i>
+            </a>
+            <a href="/events" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-calendar-days text-amber-600 text-xs"></i>
+              </div>
+              <span>Browse Events</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-300 text-xs"></i>
+            </a>
+            <% if (user.membershipStatus === 'approved') { %>
+            <a href="/alumni/certificate" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700">
+              <div class="w-8 h-8 rounded-lg bg-gold-50 flex items-center justify-center flex-shrink-0" style="background:#fef9e7;">
+                <i class="fa-solid fa-certificate text-amber-600 text-xs"></i>
+              </div>
+              <span>Download Certificate</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-300 text-xs"></i>
+            </a>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5">
+          <h3 class="font-bold text-navy-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-bullhorn text-navy-600"></i> Announcements
+          </h3>
+          <% if (announcements && announcements.length > 0) { %>
+          <div class="space-y-3">
+            <% announcements.forEach(a => { %>
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+              <div class="w-8 h-8 rounded-lg bg-navy-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i class="fa-solid fa-bell text-navy-600 text-xs"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span class="font-semibold text-gray-800 text-sm"><%= a.title %></span>
+                  <% if (a.type === 'urgent') { %><span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-semibold">Urgent</span><% } %>
+                </div>
+                <p class="text-gray-500 text-xs leading-relaxed"><%= a.content.substring(0, 100) %>...</p>
+                <p class="text-gray-400 text-xs mt-1"><%= new Date(a.createdAt).toLocaleDateString('en-IN') %></p>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+          <% } else { %>
+          <div class="text-center py-8 text-gray-400">
+            <i class="fa-solid fa-bell-slash text-3xl mb-2"></i>
+            <p class="text-sm">No announcements yet</p>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Upcoming Events -->
+      <% if (upcomingEvents && upcomingEvents.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-navy-800 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-days text-navy-600"></i> Upcoming Events
+          </h3>
+          <a href="/events" class="text-navy-600 hover:text-navy-800 text-xs font-semibold">View All <i class="fa-solid fa-arrow-right ml-1"></i></a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <% upcomingEvents.forEach(event => { %>
+          <a href="/events/<%= event._id %>" class="block p-4 rounded-xl bg-gray-50 hover:bg-navy-50 border border-gray-100 hover:border-navy-200 transition card-hover">
+            <div class="text-xs text-navy-600 font-bold bg-navy-100 px-2 py-1 rounded-lg inline-block mb-2 capitalize"><%= event.type %></div>
+            <h4 class="font-bold text-gray-800 text-sm mb-2 line-clamp-2"><%= event.title %></h4>
+            <div class="text-gray-400 text-xs flex items-center gap-1 mb-1">
+              <i class="fa-solid fa-calendar"></i>
+              <%= new Date(event.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }) %>
+            </div>
+            <div class="text-gray-400 text-xs flex items-center gap-1">
+              <i class="fa-solid fa-location-dot"></i> <%= event.venue %>
+            </div>
+          </a>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Recent Payments -->
+      <% if (payments && payments.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-gray-100 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-navy-800 flex items-center gap-2">
+            <i class="fa-solid fa-receipt text-navy-600"></i> Recent Payments
+          </h3>
+          <a href="/alumni/payments" class="text-navy-600 hover:text-navy-800 text-xs font-semibold">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 rounded-xl">
+                <th class="text-left px-4 py-2.5 text-gray-500 font-semibold text-xs uppercase">Receipt</th>
+                <th class="text-left px-4 py-2.5 text-gray-500 font-semibold text-xs uppercase">Purpose</th>
+                <th class="text-right px-4 py-2.5 text-gray-500 font-semibold text-xs uppercase">Amount</th>
+                <th class="text-left px-4 py-2.5 text-gray-500 font-semibold text-xs uppercase">Date</th>
+                <th class="text-left px-4 py-2.5 text-gray-500 font-semibold text-xs uppercase">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <% payments.forEach(p => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 font-mono text-xs text-gray-600"><%= p.receiptNumber %></td>
+                <td class="px-4 py-3 text-gray-700 capitalize"><%= p.purpose.replace('_', ' ') %></td>
+                <td class="px-4 py-3 text-right font-bold text-emerald-600">₹<%= p.amount.toLocaleString('en-IN') %></td>
+                <td class="px-4 py-3 text-gray-500 text-xs"><%= p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN') : '-' %></td>
+                <td class="px-4 py-3">
+                  <a href="/payments/receipt/<%= p._id %>" class="text-navy-600 hover:text-navy-800 text-xs font-semibold">
+                    <i class="fa-solid fa-download mr-1"></i>Receipt
+                  </a>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

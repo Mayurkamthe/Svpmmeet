@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',400:'#5f8dbe',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}},fontFamily:{display:['"Playfair Display"','Georgia','serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-bg{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}</style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-2xl">
+
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/20 mb-4">
+        <i class="fa-solid fa-graduation-cap text-3xl text-gold-400"></i>
+      </div>
+      <h1 class="font-display text-3xl font-bold text-white">Create Alumni Account</h1>
+      <p class="text-navy-300 text-sm mt-1">SVPM College of Engineering, Malegaon Bk</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div class="gradient-bg px-8 py-5">
+        <h2 class="text-white font-display text-xl font-bold">Alumni Registration</h2>
+        <p class="text-navy-300 text-sm">Fill in your details to register as an alumni</p>
+      </div>
+
+      <% if (locals.error_msg && error_msg.length > 0) { %>
+      <div class="mx-8 mt-5 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+        <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i><span><%= error_msg %></span>
+      </div>
+      <% } %>
+
+      <form action="/auth/register" method="POST" class="px-8 py-6 space-y-5">
+
+        <!-- Step 1: Personal Info -->
+        <div class="pb-4 border-b border-gray-100">
+          <h3 class="text-navy-800 font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-navy-700 text-white text-xs flex items-center justify-center font-bold">1</span>
+            Personal Information
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Full Name <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-user text-xs"></i></span>
+                <input type="text" name="name" required placeholder="Enter your full name"
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Email Address <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-envelope text-xs"></i></span>
+                <input type="email" name="email" required placeholder="your@email.com"
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Mobile Number</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">+91</span>
+                <input type="tel" name="phone" placeholder="9876543210" maxlength="10"
+                  class="w-full pl-12 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Academic Info -->
+        <div class="pb-4 border-b border-gray-100">
+          <h3 class="text-navy-800 font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-navy-700 text-white text-xs flex items-center justify-center font-bold">2</span>
+            Academic Details
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Branch <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-building-columns text-xs"></i></span>
+                <select name="branch" required class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 bg-white appearance-none">
+                  <option value="">Select Branch</option>
+                  <option>Computer Engineering</option>
+                  <option>Mechanical Engineering</option>
+                  <option>Civil Engineering</option>
+                  <option>Electronics & Telecommunication</option>
+                  <option>Electrical Engineering</option>
+                  <option>Information Technology</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Pass-Out Year <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-calendar text-xs"></i></span>
+                <select name="passOutYear" required class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 bg-white appearance-none">
+                  <option value="">Select Year</option>
+                  <% for (let y = new Date().getFullYear(); y >= 1990; y--) { %>
+                  <option value="<%= y %>"><%= y %></option>
+                  <% } %>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Password -->
+        <div>
+          <h3 class="text-navy-800 font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-navy-700 text-white text-xs flex items-center justify-center font-bold">3</span>
+            Set Password
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Password <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-lock text-xs"></i></span>
+                <input type="password" name="password" id="pwd" required placeholder="Min 6 characters"
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Confirm Password <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-lock text-xs"></i></span>
+                <input type="password" name="confirmPassword" id="cpwd" required placeholder="Repeat password"
+                  class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500" />
+              </div>
+            </div>
+          </div>
+          <div id="pwd-match" class="hidden mt-2 text-xs font-semibold"></div>
+        </div>
+
+        <button type="submit" class="w-full bg-navy-700 hover:bg-navy-800 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-user-plus"></i> Create Alumni Account
+        </button>
+
+        <p class="text-center text-sm text-gray-500">
+          Already registered? <a href="/auth/login" class="text-navy-700 font-bold hover:text-navy-900">Sign In</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const pwd = document.getElementById('pwd');
+    const cpwd = document.getElementById('cpwd');
+    const matchMsg = document.getElementById('pwd-match');
+    cpwd.addEventListener('input', () => {
+      if (!cpwd.value) { matchMsg.classList.add('hidden'); return; }
+      matchMsg.classList.remove('hidden');
+      if (pwd.value === cpwd.value) {
+        matchMsg.textContent = '✓ Passwords match';
+        matchMsg.className = 'mt-2 text-xs font-semibold text-emerald-600';
+      } else {
+        matchMsg.textContent = '✗ Passwords do not match';
+        matchMsg.className = 'mt-2 text-xs font-semibold text-red-500';
+      }
+    });
+  </script>
+</body>
+</html>

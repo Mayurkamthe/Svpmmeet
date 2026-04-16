@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',400:'#5f8dbe',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}},fontFamily:{display:['"Playfair Display"','Georgia','serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+</head>
+<body class="bg-gray-50">
+<div class="flex min-h-screen">
+  <% locals.currentPath = '/alumni/profile'; %>
+  <%- include('../partials/alumni-sidebar') %>
+
+  <main class="flex-1 overflow-y-auto">
+    <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <h1 class="text-xl font-bold text-navy-800">My Profile</h1>
+      <% if (!editing) { %>
+        <a href="/alumni/profile/edit" class="bg-navy-700 hover:bg-navy-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+          <i class="fa-solid fa-pen mr-2"></i>Edit Profile
+        </a>
+      <% } %>
+    </div>
+
+    <div class="p-6 max-w-4xl">
+      <% if (locals.success_msg && success_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-check"></i><%= success_msg %></div>
+      <% } %>
+      <% if (locals.error_msg && error_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-exclamation"></i><%= error_msg %></div>
+      <% } %>
+
+      <% if (editing) { %>
+      <!-- Edit Form -->
+      <form action="/alumni/profile/edit" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- Avatar -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <h3 class="font-bold text-navy-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-camera text-navy-600"></i> Profile Photo</h3>
+          <div class="flex items-center gap-5">
+            <div class="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-gray-200" id="avatar-preview">
+              <% if (user.avatar) { %>
+                <img src="<%= user.avatar %>" alt="" class="w-full h-full object-cover">
+              <% } else { %>
+                <i class="fa-solid fa-user text-3xl text-gray-400"></i>
+              <% } %>
+            </div>
+            <div>
+              <input type="file" name="avatar" id="avatar-input" accept=".jpg,.jpeg,.png,.webp" class="hidden" onchange="previewAvatar(this)">
+              <button type="button" onclick="document.getElementById('avatar-input').click()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-4 py-2 rounded-xl transition">
+                <i class="fa-solid fa-upload mr-2"></i>Upload Photo
+              </button>
+              <p class="text-gray-400 text-xs mt-1.5">JPG, PNG, WEBP — max 5MB</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <h3 class="font-bold text-navy-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-user text-navy-600"></i> Personal Information</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Full Name</label>
+              <input type="text" name="name" value="<%= user.name %>" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"/>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Mobile Number</label>
+              <input type="tel" name="phone" value="<%= user.phone || '' %>" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"/>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Bio</label>
+              <textarea name="bio" rows="3" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 resize-none"><%= user.profile?.bio || '' %></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Info -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <h3 class="font-bold text-navy-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-navy-600"></i> Academic & Professional</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Branch</label>
+              <select name="branch" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 bg-white">
+                <% ['Computer Engineering','Mechanical Engineering','Civil Engineering','Electronics & Telecommunication','Electrical Engineering','Information Technology'].forEach(b => { %>
+                <option value="<%= b %>" <%= user.profile?.branch === b ? 'selected' : '' %>><%= b %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Pass-Out Year</label>
+              <select name="passOutYear" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 bg-white">
+                <% for (let y = new Date().getFullYear(); y >= 1990; y--) { %>
+                <option value="<%= y %>" <%= user.profile?.passOutYear === y ? 'selected' : '' %>><%= y %></option>
+                <% } %>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Current Designation</label>
+              <input type="text" name="designation" value="<%= user.profile?.designation || '' %>" placeholder="Software Engineer" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"/>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Company / Organisation</label>
+              <input type="text" name="company" value="<%= user.profile?.company || '' %>" placeholder="TCS, Infosys..." class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"/>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">Current Location</label>
+              <input type="text" name="location" value="<%= user.profile?.location || '' %>" placeholder="Pune, Mumbai..." class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"/>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-semibold text-sm mb-1.5">LinkedIn Profile</label>
+              <input type="url" name="linkedin" value="<%= user.profile?.linkedin || '' %>" placeholder="https://linkedin.com/in/..." class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="submit" class="bg-navy-700 hover:bg-navy-800 text-white font-bold px-6 py-3 rounded-xl transition">
+            <i class="fa-solid fa-save mr-2"></i>Save Changes
+          </button>
+          <a href="/alumni/profile" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition">
+            Cancel
+          </a>
+        </div>
+      </form>
+
+      <% } else { %>
+      <!-- View Mode -->
+      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6">
+        <div class="gradient-header p-6 flex items-center gap-5">
+          <div class="w-20 h-20 rounded-2xl border-2 border-white/30 flex items-center justify-center overflow-hidden flex-shrink-0 bg-white/10">
+            <% if (user.avatar) { %>
+              <img src="<%= user.avatar %>" alt="" class="w-full h-full object-cover">
+            <% } else { %>
+              <i class="fa-solid fa-user text-3xl text-white/60"></i>
+            <% } %>
+          </div>
+          <div>
+            <h2 class="text-white font-display text-2xl font-bold"><%= user.name %></h2>
+            <p class="text-navy-300 text-sm"><%= user.profile?.designation || 'Alumni' %> <% if (user.profile?.company) { %>at <strong class="text-white"><%= user.profile.company %></strong><% } %></p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-xs bg-white/10 text-white border border-white/20 px-2.5 py-1 rounded-full font-mono font-semibold"><%= user.alumniId %></span>
+              <% if (user.membershipStatus === 'approved') { %>
+              <span class="badge-life text-xs px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-star text-xs mr-1"></i>Life Member</span>
+              <% } %>
+              <span class="text-xs <%= user.isVerified ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30' %> border px-2.5 py-1 rounded-full font-semibold">
+                <i class="fa-solid <%= user.isVerified ? 'fa-circle-check' : 'fa-clock' %> mr-1"></i>
+                <%= user.isVerified ? 'Verified' : 'Pending' %>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-envelope text-blue-600 text-xs"></i></div>
+            <div><p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Email</p><p class="text-gray-800 font-semibold text-sm"><%= user.email %></p></div>
+          </div>
+          <% if (user.phone) { %>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-phone text-green-600 text-xs"></i></div>
+            <div><p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Phone</p><p class="text-gray-800 font-semibold text-sm"><%= user.phone %></p></div>
+          </div>
+          <% } %>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-graduation-cap text-purple-600 text-xs"></i></div>
+            <div><p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Branch / Batch</p><p class="text-gray-800 font-semibold text-sm"><%= user.profile?.branch %> — <%= user.profile?.passOutYear %></p></div>
+          </div>
+          <% if (user.profile?.location) { %>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-location-dot text-rose-600 text-xs"></i></div>
+            <div><p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Location</p><p class="text-gray-800 font-semibold text-sm"><%= user.profile.location %></p></div>
+          </div>
+          <% } %>
+          <% if (user.profile?.linkedin) { %>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0"><i class="fa-brands fa-linkedin text-blue-700 text-xs"></i></div>
+            <div><p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">LinkedIn</p><a href="<%= user.profile.linkedin %>" target="_blank" class="text-blue-600 font-semibold text-sm hover:underline">View Profile</a></div>
+          </div>
+          <% } %>
+        </div>
+        <% if (user.profile?.bio) { %>
+        <div class="px-6 pb-6 border-t border-gray-100 pt-4">
+          <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2">About</p>
+          <p class="text-gray-700 text-sm leading-relaxed"><%= user.profile.bio %></p>
+        </div>
+        <% } %>
+      </div>
+      <% } %>
+
+    </div>
+  </main>
+</div>
+
+<script>
+function previewAvatar(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('avatar-preview');
+      preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" />`;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+</body>
+</html>

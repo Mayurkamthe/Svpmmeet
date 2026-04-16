@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}},fontFamily:{display:['"Playfair Display"','Georgia','serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+</head>
+<body class="bg-gray-50">
+<div class="flex min-h-screen">
+  <% locals.currentPath = '/alumni/membership'; %>
+  <%- include('../partials/alumni-sidebar') %>
+
+  <main class="flex-1 overflow-y-auto">
+    <div class="bg-white border-b border-gray-200 px-6 py-4">
+      <h1 class="text-xl font-bold text-navy-800">Life Membership</h1>
+      <p class="text-gray-500 text-sm">Become a lifetime member of SVPM Alumni Association</p>
+    </div>
+
+    <div class="p-6 max-w-3xl">
+      <% if (locals.success_msg && success_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-check"></i><%= success_msg %></div>
+      <% } %>
+      <% if (locals.error_msg && error_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-exclamation"></i><%= error_msg %></div>
+      <% } %>
+
+      <!-- Status Banner -->
+      <% if (user.membershipStatus === 'approved') { %>
+      <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-6 mb-6 text-white">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+            <i class="fa-solid fa-certificate text-3xl"></i>
+          </div>
+          <div>
+            <h2 class="font-display text-2xl font-bold">Life Member</h2>
+            <p class="text-emerald-100 text-sm">You are a verified Life Member of SVPM Alumni Association</p>
+          </div>
+          <a href="/alumni/certificate" class="ml-auto bg-white text-emerald-700 font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition flex items-center gap-2">
+            <i class="fa-solid fa-download"></i> Certificate
+          </a>
+        </div>
+      </div>
+      <% } else if (user.membershipStatus === 'pending') { %>
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-hourglass-half text-amber-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-amber-800">Application Under Review</h3>
+          <p class="text-amber-700 text-sm mt-0.5">Your payment has been received. Awaiting admin approval for your Life Membership.</p>
+        </div>
+      </div>
+      <% } else if (user.membershipStatus === 'rejected') { %>
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
+        <div class="font-bold text-red-800 mb-1">Membership Rejected</div>
+        <p class="text-red-700 text-sm">Reason: <%= user.membershipRejectionReason || 'Please contact admin.' %></p>
+      </div>
+      <% } %>
+
+      <!-- Benefits Section -->
+      <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+        <h3 class="font-bold text-navy-800 text-lg mb-5 flex items-center gap-2">
+          <i class="fa-solid fa-star text-gold-500"></i> Life Membership Benefits
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <% const benefits = [
+            { icon: 'fa-certificate', text: 'Official Membership Certificate (PDF)' },
+            { icon: 'fa-address-book', text: 'Full access to Alumni Directory' },
+            { icon: 'fa-calendar-days', text: 'Priority registration for events' },
+            { icon: 'fa-id-card', text: 'Unique Life Member Badge' },
+            { icon: 'fa-receipt', text: 'Digital payment receipts' },
+            { icon: 'fa-bell', text: 'Exclusive announcements & updates' }
+          ]; %>
+          <% benefits.forEach(b => { %>
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+            <div class="w-8 h-8 rounded-lg bg-navy-100 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid <%= b.icon %> text-navy-600 text-xs"></i>
+            </div>
+            <span class="text-gray-700 text-sm font-semibold"><%= b.text %></span>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Payment Card -->
+      <% if (user.membershipStatus === 'none' || user.membershipStatus === 'rejected') { %>
+      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div class="gradient-header p-5 flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-display font-bold text-xl">One-Time Life Membership Fee</h3>
+            <p class="text-navy-300 text-sm">Pay once, stay connected for life</p>
+          </div>
+          <div class="text-right">
+            <div class="text-gold-400 font-display font-bold text-4xl">₹<%= membershipAmount %></div>
+            <div class="text-navy-300 text-xs">One-time payment</div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
+            <i class="fa-solid fa-shield-halved text-blue-600 text-lg"></i>
+            <div>
+              <p class="text-blue-800 font-semibold text-sm">Secure Payment via Razorpay</p>
+              <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card accepted</p>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="grid grid-cols-4 gap-3 mb-6">
+            <% ['UPI', 'Card', 'Net Banking', 'Wallet'].forEach(m => { %>
+            <div class="border border-gray-100 rounded-xl p-2.5 text-center text-xs font-semibold text-gray-600 bg-gray-50">
+              <i class="fa-solid <%= m === 'UPI' ? 'fa-mobile-screen-button' : m === 'Card' ? 'fa-credit-card' : m === 'Net Banking' ? 'fa-building-columns' : 'fa-wallet' %> text-lg text-navy-600 block mb-1"></i>
+              <%= m %>
+            </div>
+            <% }) %>
+          </div>
+
+          <button id="pay-btn" onclick="initiatePayment()"
+            class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-lg flex items-center justify-center gap-3">
+            <i class="fa-solid fa-lock"></i>
+            Pay ₹<%= membershipAmount %> — Apply for Life Membership
+          </button>
+          <p class="text-center text-gray-400 text-xs mt-3">
+            <i class="fa-solid fa-info-circle mr-1"></i>
+            After payment, your membership will be reviewed and approved by admin within 2-3 business days.
+          </p>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Existing Payment Receipt -->
+      <% if (payment) { %>
+      <div class="mt-6 bg-white rounded-2xl border border-gray-100 p-5">
+        <h4 class="font-bold text-navy-800 mb-4">Payment Receipt</h4>
+        <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+          <div><span class="text-gray-500">Receipt No.</span><br><span class="font-mono font-semibold text-gray-800"><%= payment.receiptNumber %></span></div>
+          <div><span class="text-gray-500">Amount</span><br><span class="font-bold text-emerald-600">₹<%= payment.amount %></span></div>
+          <div><span class="text-gray-500">Date</span><br><span class="text-gray-800"><%= payment.paidAt ? new Date(payment.paidAt).toLocaleDateString('en-IN') : '-' %></span></div>
+          <div><span class="text-gray-500">Status</span><br><span class="font-semibold capitalize text-emerald-600"><%= payment.status %></span></div>
+        </div>
+        <a href="/payments/receipt/<%= payment._id %>" class="inline-flex items-center gap-2 bg-navy-100 hover:bg-navy-200 text-navy-700 font-semibold text-sm px-4 py-2 rounded-xl transition">
+          <i class="fa-solid fa-download"></i> Download Receipt PDF
+        </a>
+      </div>
+      <% } %>
+
+    </div>
+  </main>
+</div>
+
+<script>
+async function initiatePayment() {
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Creating order...';
+
+  try {
+    const res = await fetch('/alumni/membership/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+
+    // If no Razorpay key, show demo message
+    if (!data.key || data.key === '' || data.orderId.includes('demo')) {
+      alert('Demo mode: Razorpay not configured. In production, configure RAZORPAY_KEY_ID in .env');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= membershipAmount %> — Apply for Life Membership';
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: data.amount,
+      currency: data.currency,
+      name: 'SVPM Alumni Association',
+      description: 'Life Membership Fee',
+      order_id: data.orderId,
+      handler: async function(response) {
+        const verifyRes = await fetch('/alumni/membership/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            payment_id: data.paymentId
+          })
+        });
+        const vData = await verifyRes.json();
+        if (vData.success) {
+          window.location.href = '/alumni/membership?success=payment';
+        } else {
+          alert('Payment verification failed. Contact admin.');
+        }
+      },
+      prefill: {
+        name: '<%= user.name %>',
+        email: '<%= user.email %>',
+        contact: '<%= user.phone || "" %>'
+      },
+      theme: { color: '#1e3a5f' },
+      modal: {
+        ondismiss: () => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= membershipAmount %> — Apply for Life Membership';
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= membershipAmount %> — Apply for Life Membership';
+  }
+}
+</script>
+</body>
+</html>

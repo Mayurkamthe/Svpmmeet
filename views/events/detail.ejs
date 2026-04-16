@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+</head>
+<body class="bg-gray-50">
+  <%- include('../partials/navbar') %>
+
+  <!-- Flash -->
+  <% if(locals.success_msg&&success_msg.length>0){%><div class="fixed top-5 right-5 z-50 flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold"><i class="fa-solid fa-circle-check"></i><%=success_msg%></div><%}%>
+  <% if(locals.error_msg&&error_msg.length>0){%><div class="fixed top-5 right-5 z-50 flex items-center gap-2 bg-red-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold"><i class="fa-solid fa-circle-exclamation"></i><%=error_msg%></div><%}%>
+
+  <!-- Hero -->
+  <section class="gradient-header py-14 px-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center gap-2 mb-3">
+        <a href="/events" class="text-navy-300 hover:text-white text-sm transition"><i class="fa-solid fa-arrow-left mr-1"></i>Back to Events</a>
+      </div>
+      <div class="flex items-start gap-5">
+        <div class="w-20 h-20 rounded-2xl bg-white/10 flex flex-col items-center justify-center text-white flex-shrink-0 border border-white/20">
+          <span class="text-3xl font-display font-bold leading-none"><%= new Date(event.date).getDate() %></span>
+          <span class="text-xs font-bold uppercase text-navy-300"><%= new Date(event.date).toLocaleString('en-IN',{month:'short'}) %></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs bg-gold-500/20 text-gold-400 border border-gold-500/30 px-2.5 py-1 rounded-full font-semibold capitalize"><%= event.type %></span>
+            <% if(event.isFeatured){%><span class="text-xs badge-life px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-star text-xs mr-1"></i>Featured</span><%}%>
+            <% if(event.isFree){%><span class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-semibold">Free</span><%}%>
+          </div>
+          <h1 class="font-display text-3xl font-bold text-white"><%= event.title %></h1>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Details -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+          <h2 class="font-bold text-navy-800 text-xl mb-4">About This Event</h2>
+          <p class="text-gray-600 leading-relaxed"><%= event.description %></p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-100 p-6">
+          <h3 class="font-bold text-navy-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-info-circle text-navy-600"></i> Event Information</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+              <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-calendar text-blue-600 text-sm"></i></div>
+              <div><p class="text-gray-500 text-xs font-semibold uppercase">Date</p><p class="text-gray-800 font-semibold text-sm"><%= new Date(event.date).toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) %></p></div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+              <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-clock text-purple-600 text-sm"></i></div>
+              <div><p class="text-gray-500 text-xs font-semibold uppercase">Time</p><p class="text-gray-800 font-semibold text-sm"><%= new Date(event.date).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) %></p></div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+              <div class="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-location-dot text-rose-600 text-sm"></i></div>
+              <div><p class="text-gray-500 text-xs font-semibold uppercase">Venue</p><p class="text-gray-800 font-semibold text-sm"><%= event.venue %></p></div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+              <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-users text-amber-600 text-sm"></i></div>
+              <div><p class="text-gray-500 text-xs font-semibold uppercase">Registrations</p><p class="text-gray-800 font-semibold text-sm"><%= registrationCount %> registered<% if(event.maxAttendees>0){%> / <%= event.maxAttendees %> max<%}%></p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Card -->
+      <div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 sticky top-4">
+          <h3 class="font-bold text-navy-800 text-lg mb-4">Registration</h3>
+          <% if (!event.isFree) { %>
+          <div class="text-center mb-4">
+            <div class="text-3xl font-display font-bold text-amber-600">₹<%= event.fee %></div>
+            <p class="text-gray-400 text-xs">Registration fee</p>
+          </div>
+          <% } else { %>
+          <div class="text-center mb-4 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+            <div class="text-emerald-600 font-bold text-lg"><i class="fa-solid fa-check-circle mr-2"></i>Free Event</div>
+            <p class="text-emerald-500 text-xs">No registration fee</p>
+          </div>
+          <% } %>
+
+          <% if (locals.user) { %>
+            <% if (userRegistered) { %>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+              <i class="fa-solid fa-check-circle text-emerald-600 text-2xl mb-2 block"></i>
+              <p class="text-emerald-800 font-bold">You are registered!</p>
+              <p class="text-emerald-600 text-xs mt-1">We look forward to seeing you</p>
+            </div>
+            <% } else if (new Date(event.date) > new Date()) { %>
+            <button onclick="registerEvent('<%= event._id %>')" id="reg-btn"
+              class="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition" style="background:#1e3a5f">
+              <i class="fa-solid fa-calendar-check mr-2"></i>Register for Event
+            </button>
+            <% } else { %>
+            <div class="bg-gray-100 rounded-xl p-4 text-center text-gray-500 text-sm font-semibold">
+              <i class="fa-solid fa-calendar-xmark text-2xl mb-2 block text-gray-400"></i>
+              This event has ended
+            </div>
+            <% } %>
+          <% } else { %>
+          <a href="/auth/login" class="block w-full text-center text-white font-bold py-3 rounded-xl hover:opacity-90 transition" style="background:#1e3a5f">
+            <i class="fa-solid fa-right-to-bracket mr-2"></i>Login to Register
+          </a>
+          <p class="text-center text-gray-400 text-xs mt-2">Don't have an account? <a href="/auth/register" class="text-navy-600 font-semibold">Register</a></p>
+          <% } %>
+
+          <% if (event.maxAttendees > 0) { %>
+          <div class="mt-4">
+            <div class="flex justify-between text-xs text-gray-500 mb-1.5 font-semibold">
+              <span><%= registrationCount %> / <%= event.maxAttendees %> spots filled</span>
+              <span><%= Math.round((registrationCount/event.maxAttendees)*100) %>%</span>
+            </div>
+            <div class="bg-gray-100 rounded-full h-2">
+              <div class="h-2 rounded-full transition-all" style="background:#2d6a9f;width:<%=Math.min(100,Math.round((registrationCount/event.maxAttendees)*100))%>%"></div>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+<script>
+async function registerEvent(id) {
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Registering...';
+  try {
+    const res = await fetch(`/events/${id}/register`, { method: 'POST', headers: {'Content-Type':'application/json'} });
+    const data = await res.json();
+    if (data.success) {
+      btn.outerHTML = '<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center"><i class="fa-solid fa-check-circle text-emerald-600 text-2xl mb-2 block"></i><p class="text-emerald-800 font-bold">Registered!</p></div>';
+    } else {
+      alert(data.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-calendar-check mr-2"></i>Register for Event';
+    }
+  } catch(err) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-calendar-check mr-2"></i>Register for Event'; }
+}
+</script>
+</body>
+</html>

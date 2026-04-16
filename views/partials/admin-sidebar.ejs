@@ -1,0 +1,76 @@
+<!-- Admin Sidebar -->
+<aside class="w-64 min-h-screen bg-navy-900 flex flex-col">
+  <!-- Brand -->
+  <div class="p-5 border-b border-white/10">
+    <a href="/admin/dashboard" class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-gold-500/20 border border-gold-500/50 flex items-center justify-center">
+        <i class="fa-solid fa-shield-halved text-gold-400"></i>
+      </div>
+      <div>
+        <div class="text-white font-display font-bold text-sm">Admin Panel</div>
+        <div class="text-navy-400 text-xs">SVPM Alumni</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Admin Info -->
+  <div class="px-4 py-3 border-b border-white/10">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-gold-500/20 flex items-center justify-center">
+        <i class="fa-solid fa-user-shield text-gold-400 text-xs"></i>
+      </div>
+      <div>
+        <div class="text-white text-xs font-semibold truncate"><%= user ? user.name : 'Admin' %></div>
+        <div class="text-navy-400 text-xs">Administrator</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 p-3 space-y-1">
+    <% const p = locals.currentPath || ''; %>
+    <a href="/admin/dashboard" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p === '/admin/dashboard' ? 'active' : '' %>">
+      <i class="fa-solid fa-gauge w-4 text-center"></i> Dashboard
+    </a>
+
+    <div class="pt-2 pb-1">
+      <div class="text-navy-500 text-xs font-bold uppercase tracking-widest px-3">Management</div>
+    </div>
+    <a href="/admin/alumni" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/alumni') ? 'active' : '' %>">
+      <i class="fa-solid fa-users w-4 text-center"></i> Alumni
+    </a>
+    <a href="/admin/memberships" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/memberships') ? 'active' : '' %>">
+      <i class="fa-solid fa-id-card w-4 text-center"></i> Memberships
+    </a>
+    <a href="/admin/payments" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/payments') ? 'active' : '' %>">
+      <i class="fa-solid fa-indian-rupee-sign w-4 text-center"></i> Payments
+    </a>
+
+    <div class="pt-2 pb-1">
+      <div class="text-navy-500 text-xs font-bold uppercase tracking-widest px-3">Content</div>
+    </div>
+    <a href="/admin/events" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/events') ? 'active' : '' %>">
+      <i class="fa-solid fa-calendar-days w-4 text-center"></i> Events
+    </a>
+    <a href="/admin/announcements" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/announcements') ? 'active' : '' %>">
+      <i class="fa-solid fa-bullhorn w-4 text-center"></i> Announcements
+    </a>
+
+    <div class="pt-2 pb-1">
+      <div class="text-navy-500 text-xs font-bold uppercase tracking-widest px-3">Export</div>
+    </div>
+    <a href="/admin/export/alumni" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm">
+      <i class="fa-solid fa-file-excel w-4 text-center"></i> Export Alumni
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <div class="p-3 border-t border-white/10 space-y-1">
+    <a href="/" class="flex items-center gap-3 px-3 py-2 rounded-lg text-navy-400 hover:text-navy-200 transition text-xs">
+      <i class="fa-solid fa-arrow-left w-4 text-center"></i> Back to Site
+    </a>
+    <a href="/auth/logout" class="flex items-center gap-3 px-3 py-2 rounded-lg text-navy-400 hover:text-red-400 hover:bg-red-500/10 transition text-xs">
+      <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Logout
+    </a>
+  </div>
+</aside>

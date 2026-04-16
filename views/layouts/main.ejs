@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title : 'SVPM Alumni' %></title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { 50:'#f0f4f9', 100:'#dce8f3', 200:'#b9d0e7', 300:'#8db0d4', 400:'#5f8dbe', 500:'#3a70a8', 600:'#2d6a9f', 700:'#1e3a5f', 800:'#172d4a', 900:'#0f1e32' },
+            gold: { 400:'#f5c842', 500:'#e8b820', 600:'#c8a31a' }
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body: ['"Source Sans 3"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+    .font-display { font-family: 'Playfair Display', Georgia, serif; }
+    .sidebar-link.active { background: rgba(255,255,255,0.15); border-left: 3px solid #f5c842; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.1); }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+    .badge-life { background: linear-gradient(135deg, #f5c842, #c8a31a); color: #1a1a1a; }
+    .gradient-header { background: linear-gradient(135deg, #0f1e32 0%, #1e3a5f 50%, #2d6a9f 100%); }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <%- body %>
+
+  <!-- Toast Notifications -->
+  <% if (locals.success_msg && success_msg.length > 0) { %>
+  <div id="toast-success" class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold max-w-sm animate-fade-in">
+    <i class="fa-solid fa-circle-check text-lg"></i>
+    <span><%= success_msg %></span>
+    <button onclick="this.parentElement.remove()" class="ml-auto opacity-75 hover:opacity-100"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <% } %>
+  <% if (locals.error_msg && error_msg.length > 0) { %>
+  <div id="toast-error" class="fixed top-5 right-5 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold max-w-sm">
+    <i class="fa-solid fa-circle-exclamation text-lg"></i>
+    <span><%= error_msg %></span>
+    <button onclick="this.parentElement.remove()" class="ml-auto opacity-75 hover:opacity-100"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <% } %>
+
+  <script>
+    // Auto-dismiss toasts
+    setTimeout(() => {
+      document.querySelectorAll('[id^="toast-"]').forEach(el => {
+        el.style.transition = 'opacity 0.5s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+      });
+    }, 4000);
+  </script>
+</body>
+</html>
