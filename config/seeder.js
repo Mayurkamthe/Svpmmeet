@@ -1,21 +1,20 @@
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 const seedAdmin = async () => {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@svpmcoe.edu.in';
     const existing = await User.findOne({ email: adminEmail });
-    if (existing) return;
+    if (existing) {
+      console.log(`✓ Admin already exists: ${adminEmail}`);
+      return;
+    }
 
-    const hashedPassword = await bcrypt.hash(
-      process.env.ADMIN_PASSWORD || 'Admin@SVPM2024',
-      12
-    );
-
+    // Do NOT pre-hash — the User model pre('save') hook hashes automatically.
+    // Passing an already-hashed password causes double-hashing and login failure.
     await User.create({
       name: process.env.ADMIN_NAME || 'SVPM Admin',
       email: adminEmail,
-      password: hashedPassword,
+      password: process.env.ADMIN_PASSWORD || 'Admin@SVPM2024',
       role: 'admin',
       isVerified: true,
       membershipStatus: 'approved',
@@ -28,7 +27,7 @@ const seedAdmin = async () => {
       }
     });
 
-    console.log(`✓ Admin seeded: ${adminEmail}`);
+    console.log(`✓ Admin seeded: ${adminEmail} / ${process.env.ADMIN_PASSWORD || 'Admin@SVPM2024'}`);
   } catch (err) {
     console.error('Seeder error:', err.message);
   }

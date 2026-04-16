@@ -19,7 +19,7 @@ const isAuthenticated = async (req, res, next) => {
       return res.redirect('/auth/login');
     }
 
-    req.session.user = user;
+    req.session.user = user.toObject();
     res.locals.user = user;
     req.user = user;
     next();
@@ -30,11 +30,11 @@ const isAuthenticated = async (req, res, next) => {
   }
 };
 
-// Ensure user is admin
+// Ensure user is admin — redirect to login (not alumni dashboard) on failure
 const isAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') return next();
   req.flash('error_msg', 'Access denied. Admin only area.');
-  res.redirect('/alumni/dashboard');
+  res.redirect('/auth/login');   // was '/alumni/dashboard' — caused redirect loop
 };
 
 // Ensure user is alumni
@@ -54,12 +54,12 @@ const redirectIfAuthenticated = (req, res, next) => {
       if (user) {
         return res.redirect(user.role === 'admin' ? '/admin/dashboard' : '/alumni/dashboard');
       }
-    } catch (e) { /* continue */ }
+    } catch (e) { /* token invalid — let through */ }
   }
   next();
 };
 
-// Ensure alumni is approved
+// Ensure alumni account is admin-approved
 const isApproved = (req, res, next) => {
   if (req.user.role === 'admin') return next();
   if (!req.user.isVerified) {
