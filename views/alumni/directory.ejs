@@ -10,17 +10,17 @@
   <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}.card-hover{transition:transform 0.2s,box-shadow 0.2s;}.card-hover:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.1);}</style>
 </head>
 <body class="bg-gray-50">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen md:min-h-screen">
   <% locals.currentPath = '/alumni/directory'; %>
   <%- include('../partials/alumni-sidebar') %>
 
-  <main class="flex-1 overflow-y-auto">
-    <div class="bg-white border-b border-gray-200 px-6 py-4">
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+    <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
       <h1 class="text-xl font-bold text-navy-800">Alumni Directory</h1>
       <p class="text-gray-500 text-sm">Browse and connect with SVPM alumni — <%= total %> members found</p>
     </div>
 
-    <div class="p-6">
+    <div class="p-4 sm:p-6">
       <!-- Search & Filters -->
       <form method="GET" action="/alumni/directory" class="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">

@@ -18,13 +18,13 @@
   </style>
 </head>
 <body class="bg-gray-50">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen md:min-h-screen">
   <% locals.currentPath = '/alumni/dashboard'; %>
   <%- include('../partials/alumni-sidebar') %>
 
-  <main class="flex-1 overflow-hidden">
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
     <!-- Top Bar -->
-    <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-wrap gap-2">
       <div>
         <h1 class="text-xl font-bold text-navy-800">Dashboard</h1>
         <p class="text-gray-500 text-sm">Welcome back, <strong><%= user.name %></strong></p>
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <div class="p-6 overflow-y-auto" style="max-height: calc(100vh - 73px)">
+    <div class="p-6 overflow-y-auto" style="min-height: 0">
 
       <!-- Flash Messages -->
       <% if (locals.success_msg && success_msg.length > 0) { %>

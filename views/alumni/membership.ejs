@@ -11,17 +11,17 @@
   <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
 </head>
 <body class="bg-gray-50">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen md:min-h-screen">
   <% locals.currentPath = '/alumni/membership'; %>
   <%- include('../partials/alumni-sidebar') %>
 
-  <main class="flex-1 overflow-y-auto">
-    <div class="bg-white border-b border-gray-200 px-6 py-4">
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+    <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
       <h1 class="text-xl font-bold text-navy-800">Life Membership</h1>
       <p class="text-gray-500 text-sm">Become a lifetime member of SVPM Alumni Association</p>
     </div>
 
-    <div class="p-6 max-w-3xl">
+    <div class="p-4 sm:p-6 max-w-3xl">
       <% if (locals.success_msg && success_msg.length > 0) { %>
       <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-check"></i><%= success_msg %></div>
       <% } %>
@@ -100,7 +100,7 @@
             <div class="text-navy-300 text-xs">One-time payment</div>
           </div>
         </div>
-        <div class="p-6">
+        <div class="p-4 sm:p-6">
           <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
             <i class="fa-solid fa-shield-halved text-blue-600 text-lg"></i>
             <div>
@@ -110,7 +110,7 @@
           </div>
 
           <!-- Payment Methods -->
-          <div class="grid grid-cols-4 gap-3 mb-6">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <% ['UPI', 'Card', 'Net Banking', 'Wallet'].forEach(m => { %>
             <div class="border border-gray-100 rounded-xl p-2.5 text-center text-xs font-semibold text-gray-600 bg-gray-50">
               <i class="fa-solid <%= m === 'UPI' ? 'fa-mobile-screen-button' : m === 'Card' ? 'fa-credit-card' : m === 'Net Banking' ? 'fa-building-columns' : 'fa-wallet' %> text-lg text-navy-600 block mb-1"></i>

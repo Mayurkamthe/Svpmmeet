@@ -1,7 +1,24 @@
+<!-- Mobile Top Bar -->
+<div class="md:hidden fixed top-0 left-0 right-0 z-50 bg-navy-900 px-4 py-3 flex items-center justify-between shadow-lg">
+  <a href="/admin/dashboard" class="flex items-center gap-2">
+    <div class="w-8 h-8 rounded-full bg-gold-500/20 border border-gold-500/50 flex items-center justify-center">
+      <i class="fa-solid fa-shield-halved text-gold-400 text-sm"></i>
+    </div>
+    <span class="text-white font-bold text-sm">Admin Panel</span>
+  </a>
+  <button onclick="toggleAdminSidebar()" class="text-white p-2 rounded-lg hover:bg-white/10 transition">
+    <i class="fa-solid fa-bars text-xl"></i>
+  </button>
+</div>
+
+<!-- Overlay -->
+<div id="admin-overlay" class="md:hidden fixed inset-0 bg-black/60 z-40 hidden" onclick="closeAdminSidebar()"></div>
+
 <!-- Admin Sidebar -->
-<aside class="w-64 min-h-screen bg-navy-900 flex flex-col">
+<aside id="admin-sidebar" class="w-64 min-h-screen bg-navy-900 flex flex-col flex-shrink-0 fixed md:static top-0 left-0 z-50 h-screen transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+
   <!-- Brand -->
-  <div class="p-5 border-b border-white/10">
+  <div class="p-5 border-b border-white/10 flex items-center justify-between">
     <a href="/admin/dashboard" class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-full bg-gold-500/20 border border-gold-500/50 flex items-center justify-center">
         <i class="fa-solid fa-shield-halved text-gold-400"></i>
@@ -11,6 +28,9 @@
         <div class="text-navy-400 text-xs">SVPM Alumni</div>
       </div>
     </a>
+    <button onclick="closeAdminSidebar()" class="md:hidden text-white/60 hover:text-white p-1 ml-2">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
   </div>
 
   <!-- Admin Info -->
@@ -27,39 +47,39 @@
   </div>
 
   <!-- Nav -->
-  <nav class="flex-1 p-3 space-y-1">
+  <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
     <% const p = locals.currentPath || ''; %>
-    <a href="/admin/dashboard" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p === '/admin/dashboard' ? 'active' : '' %>">
+    <a href="/admin/dashboard" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p === '/admin/dashboard' ? 'active' : '' %>">
       <i class="fa-solid fa-gauge w-4 text-center"></i> Dashboard
     </a>
 
     <div class="pt-2 pb-1">
       <div class="text-navy-500 text-xs font-bold uppercase tracking-widest px-3">Management</div>
     </div>
-    <a href="/admin/alumni" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/alumni') ? 'active' : '' %>">
+    <a href="/admin/alumni" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/alumni') ? 'active' : '' %>">
       <i class="fa-solid fa-users w-4 text-center"></i> Alumni
     </a>
-    <a href="/admin/memberships" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/memberships') ? 'active' : '' %>">
+    <a href="/admin/memberships" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/memberships') ? 'active' : '' %>">
       <i class="fa-solid fa-id-card w-4 text-center"></i> Memberships
     </a>
-    <a href="/admin/payments" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/payments') ? 'active' : '' %>">
+    <a href="/admin/payments" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/payments') ? 'active' : '' %>">
       <i class="fa-solid fa-indian-rupee-sign w-4 text-center"></i> Payments
     </a>
 
     <div class="pt-2 pb-1">
       <div class="text-navy-500 text-xs font-bold uppercase tracking-widest px-3">Content</div>
     </div>
-    <a href="/admin/events" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/events') ? 'active' : '' %>">
+    <a href="/admin/events" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/events') ? 'active' : '' %>">
       <i class="fa-solid fa-calendar-days w-4 text-center"></i> Events
     </a>
-    <a href="/admin/announcements" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/announcements') ? 'active' : '' %>">
+    <a href="/admin/announcements" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm <%= p.includes('/admin/announcements') ? 'active' : '' %>">
       <i class="fa-solid fa-bullhorn w-4 text-center"></i> Announcements
     </a>
 
     <div class="pt-2 pb-1">
       <div class="text-navy-500 text-xs font-bold uppercase tracking-widest px-3">Export</div>
     </div>
-    <a href="/admin/export/alumni" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm">
+    <a href="/admin/export/alumni" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-white transition text-sm">
       <i class="fa-solid fa-file-excel w-4 text-center"></i> Export Alumni
     </a>
   </nav>
@@ -74,3 +94,14 @@
     </a>
   </div>
 </aside>
+
+<script>
+  function toggleAdminSidebar() {
+    document.getElementById('admin-sidebar').classList.toggle('-translate-x-full');
+    document.getElementById('admin-overlay').classList.toggle('hidden');
+  }
+  function closeAdminSidebar() {
+    document.getElementById('admin-sidebar').classList.add('-translate-x-full');
+    document.getElementById('admin-overlay').classList.add('hidden');
+  }
+</script>

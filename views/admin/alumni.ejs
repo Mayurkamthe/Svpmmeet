@@ -9,17 +9,17 @@
   <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
 </head>
 <body class="bg-gray-100">
-<div class="flex min-h-screen">
+<div class="flex min-h-screen md:min-h-screen">
   <% locals.currentPath = '/admin/alumni'; %>
   <%- include('../partials/admin-sidebar') %>
-  <main class="flex-1 overflow-y-auto">
-    <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+    <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
       <div><h1 class="text-xl font-bold text-navy-800" style="color:#1e3a5f">Manage Alumni</h1><p class="text-gray-500 text-sm"><%= total %> alumni total</p></div>
       <a href="/admin/export/alumni" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> Export</a>
     </div>
-    <div class="p-6">
+    <div class="p-4 sm:p-6">
       <form method="GET" action="/admin/alumni" class="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-search text-xs"></i></span><input type="text" name="search" value="<%= query.search||'' %>" placeholder="Name, email, ID..." class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/></div>
           <select name="branch" class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Branches</option><% branches.forEach(b=>{%><option value="<%=b%>" <%=query.branch===b?'selected':''%>><%=b%></option><%})%></select>
           <select name="status" class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Status</option><option value="verified" <%=query.status==='verified'?'selected':''%>>Verified</option><option value="pending" <%=query.status==='pending'?'selected':''%>>Pending</option></select>

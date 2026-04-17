@@ -7,20 +7,28 @@
   <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',300:'#8db0d4',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820'}}}}}</script>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+  <style>
+    body{font-family:'Source Sans 3',system-ui,sans-serif;}
+    .gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}
+    .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.1);}
+    .badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}
+  </style>
 </head>
 <body class="bg-gray-50">
 <div class="flex min-h-screen">
   <% locals.currentPath = '/alumni/payments'; %>
   <%- include('../partials/alumni-sidebar') %>
-  <main class="flex-1 overflow-y-auto">
-    <div class="bg-white border-b border-gray-200 px-6 py-4">
-      <h1 class="text-xl font-bold text-navy-800">Payment History</h1>
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+    <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
+      <h1 class="text-xl font-bold" style="color:#1e3a5f">Payment History</h1>
       <p class="text-gray-500 text-sm">All your transactions with SVPM Alumni Association</p>
     </div>
-    <div class="p-6">
+    <div class="p-4 sm:p-6">
       <% if (payments && payments.length > 0) { %>
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+
+      <!-- Desktop Table (hidden on mobile) -->
+      <div class="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -38,7 +46,7 @@
               <tr class="hover:bg-gray-50">
                 <td class="px-5 py-4 font-mono text-xs text-gray-600"><%= p.receiptNumber %></td>
                 <td class="px-5 py-4 text-gray-700 font-semibold capitalize"><%= p.purpose.replace(/_/g, ' ') %></td>
-                <td class="px-5 py-4 text-right font-bold text-lg">
+                <td class="px-5 py-4 text-right font-bold">
                   <span class="<%= p.status === 'paid' ? 'text-emerald-600' : 'text-gray-400' %>">₹<%= p.amount.toLocaleString('en-IN') %></span>
                 </td>
                 <td class="px-5 py-4">
@@ -50,7 +58,7 @@
                 <td class="px-5 py-4 text-gray-500 text-xs"><%= p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) : '-' %></td>
                 <td class="px-5 py-4">
                   <% if (p.status === 'paid') { %>
-                  <a href="/payments/receipt/<%= p._id %>" class="inline-flex items-center gap-1.5 text-navy-600 hover:text-navy-800 bg-navy-50 hover:bg-navy-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                  <a href="/payments/receipt/<%= p._id %>" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
                     <i class="fa-solid fa-download text-xs"></i> PDF
                   </a>
                   <% } %>
@@ -61,12 +69,42 @@
           </table>
         </div>
       </div>
+
+      <!-- Mobile Card Layout (shown only on mobile) -->
+      <div class="sm:hidden space-y-3">
+        <% payments.forEach(p => { %>
+        <div class="bg-white rounded-2xl border border-gray-100 p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-bold text-gray-800 capitalize text-sm"><%= p.purpose.replace(/_/g, ' ') %></p>
+              <p class="font-mono text-xs text-gray-400 mt-0.5"><%= p.receiptNumber %></p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full
+              <%= p.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700' %>">
+              <%= p.status.toUpperCase() %>
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold <%= p.status === 'paid' ? 'text-emerald-600' : 'text-gray-400' %>">₹<%= p.amount.toLocaleString('en-IN') %></p>
+              <p class="text-gray-400 text-xs mt-0.5"><i class="fa-regular fa-calendar mr-1"></i><%= p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) : 'Pending' %></p>
+            </div>
+            <% if (p.status === 'paid') { %>
+            <a href="/payments/receipt/<%= p._id %>" class="inline-flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-xl transition" style="background:#1e3a5f;color:white;">
+              <i class="fa-solid fa-download"></i> Receipt
+            </a>
+            <% } %>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+
       <% } else { %>
       <div class="text-center py-20 bg-white rounded-2xl border border-gray-100">
         <i class="fa-solid fa-receipt text-5xl text-gray-200 mb-4"></i>
         <h3 class="text-gray-500 font-semibold">No transactions yet</h3>
         <p class="text-gray-400 text-sm mt-1">Your payment history will appear here</p>
-        <a href="/alumni/membership" class="inline-block mt-5 bg-navy-700 hover:bg-navy-800 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition">
+        <a href="/alumni/membership" class="inline-block mt-5 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition" style="background:#1e3a5f">
           Apply for Life Membership
         </a>
       </div>
