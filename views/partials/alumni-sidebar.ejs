@@ -1,53 +1,53 @@
 <!-- Mobile Top Bar -->
-<div class="md:hidden fixed top-0 left-0 right-0 z-50 gradient-header px-4 py-3 flex items-center justify-between shadow-lg">
+<div class="md:hidden fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between shadow-lg" style="background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%)">
   <a href="/" class="flex items-center gap-2">
-    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-gold-400/50">
-      <i class="fa-solid fa-graduation-cap text-gold-400 text-sm"></i>
+    <div class="w-8 h-8 rounded-full flex items-center justify-center border" style="background:rgba(255,255,255,0.1);border-color:rgba(245,200,66,0.5)">
+      <i class="fa-solid fa-graduation-cap text-sm" style="color:#f5c842"></i>
     </div>
     <span class="text-white font-bold text-sm">SVPM Alumni</span>
   </a>
-  <button onclick="toggleAlumniSidebar()" class="text-white p-2 rounded-lg hover:bg-white/10 transition">
+  <button id="alumni-hamburger" onclick="toggleAlumniSidebar()" class="text-white p-2 rounded-lg transition" style="background:transparent" aria-label="Open menu">
     <i class="fa-solid fa-bars text-xl"></i>
   </button>
 </div>
 
 <!-- Overlay -->
-<div id="sidebar-overlay" class="md:hidden fixed inset-0 bg-black/60 z-40 hidden" onclick="closeAlumniSidebar()"></div>
+<div id="sidebar-overlay" class="md:hidden fixed inset-0 z-40 hidden" style="background:rgba(0,0,0,0.6)" onclick="closeAlumniSidebar()"></div>
 
 <!-- Alumni Sidebar -->
-<aside id="alumni-sidebar" class="w-64 min-h-screen gradient-header flex flex-col flex-shrink-0 fixed md:static top-0 left-0 z-50 h-screen transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+<aside id="alumni-sidebar" class="w-64 min-h-screen flex flex-col flex-shrink-0 fixed md:static top-0 left-0 z-50 h-screen transition-transform duration-300 ease-in-out" style="background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);transform:translateX(-100%)">
 
   <!-- Brand -->
-  <div class="p-5 border-b border-white/10 flex items-center justify-between">
+  <div class="p-5 flex items-center justify-between" style="border-bottom:1px solid rgba(255,255,255,0.1)">
     <a href="/" class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-gold-400/50">
-        <i class="fa-solid fa-graduation-cap text-gold-400"></i>
+      <div class="w-10 h-10 rounded-full flex items-center justify-center border" style="background:rgba(255,255,255,0.1);border-color:rgba(245,200,66,0.5)">
+        <i class="fa-solid fa-graduation-cap" style="color:#f5c842"></i>
       </div>
       <div>
-        <div class="text-white font-display font-bold text-sm leading-tight">SVPM Alumni</div>
-        <div class="text-navy-300 text-xs">Member Portal</div>
+        <div class="text-white font-bold text-sm leading-tight">SVPM Alumni</div>
+        <div class="text-xs" style="color:#b9d0e7">Member Portal</div>
       </div>
     </a>
-    <button onclick="closeAlumniSidebar()" class="md:hidden text-white/60 hover:text-white p-1 ml-2">
+    <button onclick="closeAlumniSidebar()" class="md:hidden text-white p-1 ml-2 rounded" style="opacity:0.6" aria-label="Close menu">
       <i class="fa-solid fa-xmark text-lg"></i>
     </button>
   </div>
 
   <!-- User Card -->
-  <div class="p-4 border-b border-white/10">
+  <div class="p-4" style="border-bottom:1px solid rgba(255,255,255,0.1)">
     <div class="flex items-center gap-3">
-      <div class="w-11 h-11 rounded-full bg-white/10 border-2 border-gold-400/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+      <div class="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border-2" style="background:rgba(255,255,255,0.1);border-color:rgba(245,200,66,0.5)">
         <% if (user && user.avatar) { %>
           <img src="<%= user.avatar %>" alt="" class="w-full h-full object-cover">
         <% } else { %>
-          <i class="fa-solid fa-user text-navy-300"></i>
+          <i class="fa-solid fa-user" style="color:#b9d0e7"></i>
         <% } %>
       </div>
       <div class="overflow-hidden">
         <div class="text-white font-semibold text-sm truncate"><%= user ? user.name : 'Alumni' %></div>
-        <div class="text-navy-300 text-xs truncate"><%= user ? user.alumniId : '' %></div>
+        <div class="text-xs truncate" style="color:#b9d0e7"><%= user ? user.alumniId : '' %></div>
         <% if (user && user.membershipStatus === 'approved') { %>
-          <span class="inline-block badge-life text-xs px-2 py-0.5 rounded-full font-bold mt-0.5">
+          <span class="inline-block text-xs px-2 py-0.5 rounded-full font-bold mt-0.5 badge-life">
             <i class="fa-solid fa-star text-xs"></i> Life Member
           </span>
         <% } %>
@@ -58,46 +58,69 @@
   <!-- Nav Links -->
   <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
     <% const currentPath = locals.currentPath || ''; %>
-    <a href="/alumni/dashboard" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/dashboard' ? 'active' : '' %>">
+    <a href="/alumni/dashboard" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= currentPath === '/alumni/dashboard' ? 'active' : '' %>" style="color:#b9d0e7">
       <i class="fa-solid fa-gauge w-4 text-center"></i> Dashboard
     </a>
-    <a href="/alumni/profile" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath.includes('/alumni/profile') ? 'active' : '' %>">
+    <a href="/alumni/profile" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= currentPath.includes('/alumni/profile') ? 'active' : '' %>" style="color:#b9d0e7">
       <i class="fa-solid fa-user w-4 text-center"></i> My Profile
     </a>
-    <a href="/alumni/membership" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/membership' ? 'active' : '' %>">
+    <a href="/alumni/membership" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= currentPath === '/alumni/membership' ? 'active' : '' %>" style="color:#b9d0e7">
       <i class="fa-solid fa-id-card w-4 text-center"></i> Membership
     </a>
-    <a href="/alumni/payments" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/payments' ? 'active' : '' %>">
+    <a href="/alumni/payments" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= currentPath === '/alumni/payments' ? 'active' : '' %>" style="color:#b9d0e7">
       <i class="fa-solid fa-receipt w-4 text-center"></i> Payments
     </a>
-    <a href="/alumni/directory" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm <%= currentPath === '/alumni/directory' ? 'active' : '' %>">
+    <a href="/alumni/directory" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= currentPath === '/alumni/directory' ? 'active' : '' %>" style="color:#b9d0e7">
       <i class="fa-solid fa-address-book w-4 text-center"></i> Directory
     </a>
-    <a href="/events" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-200 hover:text-white transition text-sm">
+    <a href="/events" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm" style="color:#b9d0e7">
       <i class="fa-solid fa-calendar-days w-4 text-center"></i> Events
     </a>
     <% if (user && user.membershipStatus === 'approved') { %>
-    <a href="/alumni/certificate" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gold-400 hover:text-gold-300 transition text-sm">
+    <a href="/alumni/certificate" onclick="closeAlumniSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm" style="color:#f5c842">
       <i class="fa-solid fa-certificate w-4 text-center"></i> Certificate
     </a>
     <% } %>
   </nav>
 
   <!-- Logout -->
-  <div class="p-3 border-t border-white/10">
-    <a href="/auth/logout" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-300 hover:text-red-400 hover:bg-red-500/10 transition text-sm">
+  <div class="p-3" style="border-top:1px solid rgba(255,255,255,0.1)">
+    <a href="/auth/logout" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm" style="color:#b9d0e7">
       <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Logout
     </a>
   </div>
 </aside>
 
+<style>
+  @media (min-width: 768px) {
+    #alumni-sidebar { transform: translateX(0) !important; position: static !important; height: 100vh; }
+    #sidebar-overlay { display: none !important; }
+  }
+  .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #fff !important; }
+  .sidebar-link.active { background: rgba(255,255,255,0.15); border-left: 3px solid #f5c842; color: #fff !important; }
+  .badge-life { background: linear-gradient(135deg,#f5c842,#c8a31a); color: #1a1a1a; }
+</style>
+
 <script>
   function toggleAlumniSidebar() {
-    document.getElementById('alumni-sidebar').classList.toggle('-translate-x-full');
-    document.getElementById('sidebar-overlay').classList.toggle('hidden');
+    const sidebar = document.getElementById('alumni-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const isOpen = sidebar.style.transform === 'translateX(0px)' || sidebar.style.transform === 'translateX(0)';
+    if (isOpen) {
+      closeAlumniSidebar();
+    } else {
+      sidebar.style.transform = 'translateX(0)';
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
   }
   function closeAlumniSidebar() {
-    document.getElementById('alumni-sidebar').classList.add('-translate-x-full');
+    document.getElementById('alumni-sidebar').style.transform = 'translateX(-100%)';
     document.getElementById('sidebar-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
   }
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAlumniSidebar();
+  });
 </script>
