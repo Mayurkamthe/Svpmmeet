@@ -83,7 +83,7 @@
         <!-- Recent Registrations -->
         <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-navy-800 flex items-center gap-2"><i class="fa-solid fa-user-plus text-navy-600"></i> Recent Registrations</h3>
+            <h3 class="font-bold text-navy-800 flex items-center gap-2"><i class="fa-solid fa-user-clock text-amber-600"></i> Pending Approvals</h3>
             <a href="/admin/alumni" class="text-navy-600 text-xs font-semibold hover:text-navy-800">View All</a>
           </div>
           <div class="space-y-2">
@@ -110,7 +110,7 @@
             </div>
             <% }) %>
             <% } else { %>
-            <div class="text-center py-6 text-gray-400 text-sm"><i class="fa-solid fa-users text-2xl mb-2 block text-gray-200"></i>No recent registrations</div>
+            <div class="text-center py-6 text-gray-400 text-sm"><i class="fa-solid fa-user-check text-2xl mb-2 block text-gray-200"></i>No pending approvals</div>
             <% } %>
           </div>
         </div>
@@ -205,29 +205,36 @@
 </div>
 
 <script>
+const fetchOpts = (extra={}) => ({credentials:'same-origin',headers:{'Content-Type':'application/json'},...extra});
 async function approveAlumni(id, btn) {
   if (!confirm('Approve this alumni?')) return;
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-  const res = await fetch(`/admin/alumni/${id}/approve`, {method:'POST'});
-  const data = await res.json();
-  if (data.success) { btn.outerHTML = '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-semibold">Approved</span>'; }
-  else { alert(data.message); btn.disabled = false; }
+  try {
+    const res = await fetch(`/admin/alumni/${id}/approve`, {method:'POST',...fetchOpts()});
+    const data = await res.json();
+    if (data.success) { btn.outerHTML = '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-semibold"><i class="fa-solid fa-check mr-1"></i>Approved</span>'; }
+    else { alert(data.message); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve'; }
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve'; }
 }
 async function approveMembership(id, btn) {
   if (!confirm('Approve this membership?')) return;
   btn.disabled = true;
-  const res = await fetch(`/admin/memberships/${id}/approve`, {method:'POST'});
-  const data = await res.json();
-  if (data.success) { document.getElementById(`mem-row-${id}`)?.remove(); }
-  else alert(data.message);
+  try {
+    const res = await fetch(`/admin/memberships/${id}/approve`, {method:'POST',...fetchOpts()});
+    const data = await res.json();
+    if (data.success) { document.getElementById(`mem-row-${id}`)?.remove(); }
+    else { alert(data.message); btn.disabled = false; }
+  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; }
 }
 async function rejectMembership(id) {
   const reason = prompt('Reason for rejection:');
   if (!reason) return;
-  const res = await fetch(`/admin/memberships/${id}/reject`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})});
-  const data = await res.json();
-  if (data.success) document.getElementById(`mem-row-${id}`)?.remove();
-  else alert(data.message);
+  try {
+    const res = await fetch(`/admin/memberships/${id}/reject`, {method:'POST',...fetchOpts(),body:JSON.stringify({reason})});
+    const data = await res.json();
+    if (data.success) document.getElementById(`mem-row-${id}`)?.remove();
+    else alert(data.message);
+  } catch(e) { alert('Error: ' + e.message); }
 }
 </script>
 </body>
