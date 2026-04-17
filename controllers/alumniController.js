@@ -338,5 +338,5 @@ exports.getPayments = async (req, res) => {
 
 // GET /alumni/pending
 exports.getPending = (req, res) => {
-  res.render('alumni/pending', { title: 'Account Pending' });
+  res.render('alumni/pending', { title: 'Account Pending', user: req.user || null });
 };
