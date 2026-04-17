@@ -72,6 +72,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(methodOverride('_method'));
+app.use(methodOverride(function (req, res) {
+  if (req.query && req.query._method) {
+    const method = req.query._method;
+    delete req.query._method;
+    return method;
+  }
+}));
 app.use(fileUpload({
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 },
   useTempFiles: true,
