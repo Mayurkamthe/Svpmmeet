@@ -149,7 +149,7 @@
             <% }) %>
           </div>
 
-          <button id="pay-btn" onclick="initiatePayment()"
+          <button id="pay-btn"
             class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-base flex items-center justify-center gap-3">
             <i class="fa-solid fa-lock"></i>
             <span id="pay-btn-text">Pay ₹<%= membershipAmount.toLocaleString('en-IN') %> — Apply for Life Membership</span>
@@ -303,6 +303,12 @@ if (urlParams.get('success')) {
   toast.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Payment successful! Your membership is under review.</span>';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 5000);
+}
+
+// Attach event listener
+const payBtnElement = document.getElementById('pay-btn');
+if (payBtnElement) {
+  payBtnElement.addEventListener('click', initiatePayment);
 }
 </script>
 </body>
