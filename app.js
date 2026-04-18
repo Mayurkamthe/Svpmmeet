@@ -42,6 +42,7 @@ app.use(helmet({
         "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       connectSrc: ["'self'", "https://identitytoolkit.googleapis.com",
         "https://www.googleapis.com", "https://securetoken.googleapis.com"],
       frameSrc: ["'self'", "https://www.google.com", "https://accounts.google.com"]
