@@ -4,55 +4,234 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title><%= title %></title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',400:'#5f8dbe',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}}}}}</script>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+  <style>
+    body{font-family:'Source Sans 3',system-ui,sans-serif;}
+    .gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}
+    .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.1);}
+    .badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}
+  </style>
 </head>
 <body class="bg-gray-100">
-<div class="flex min-h-screen md:min-h-screen">
+<div class="flex min-h-screen">
   <% locals.currentPath = '/admin/memberships'; %>
   <%- include('../partials/admin-sidebar') %>
   <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
     <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-10">
       <h1 class="text-xl font-bold" style="color:#1e3a5f">Membership Requests</h1>
-      <p class="text-gray-500 text-sm">Manage life membership applications</p>
+      <p class="text-gray-500 text-sm">Manage life membership applications — approve after verifying payment</p>
     </div>
     <div class="p-4 sm:p-6">
+
       <!-- Status Tabs -->
       <div class="flex gap-2 mb-6 flex-wrap">
         <% ['pending','approved','rejected','all'].forEach(s => { %>
-        <a href="/admin/memberships?status=<%= s %>" class="px-4 py-2 rounded-xl text-sm font-semibold transition capitalize
-          <%= status === s ? 'text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' %>"
+        <a href="/admin/memberships?status=<%= s %>"
+          class="px-4 py-2 rounded-xl text-sm font-semibold transition capitalize <%= status === s ? 'text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' %>"
           <%= status === s ? 'style="background:#1e3a5f"' : '' %>>
           <%= s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1) %>
+          <% if (s === 'pending') { %>
+            <span class="ml-1 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+              <%= users.filter(u => u.membershipStatus === 'pending').length %>
+            </span>
+          <% } %>
         </a>
         <% }) %>
       </div>
 
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <% if (locals.success_msg && success_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm">
+        <i class="fa-solid fa-circle-check"></i><span><%= success_msg %></span>
+      </div>
+      <% } %>
+
+      <!-- Desktop Table -->
+      <div class="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead><tr class="bg-gray-50 border-b border-gray-100"><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni ID</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Applied On</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Status</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Actions</th></tr></thead>
-            <tbody class="divide-y divide-gray-50">
-              <% if(users&&users.length>0){users.forEach(u=>{%>
-              <tr class="hover:bg-gray-50" id="mrow-<%= u._id %>">
-                <td class="px-5 py-4"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-navy-100 flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-sm overflow-hidden"><% if(u.avatar){%><img src="<%=u.avatar%>" class="w-full h-full object-cover"><%}else{%><%=u.name.charAt(0)%><%}%></div><div><p class="font-semibold text-gray-800"><%=u.name%></p><p class="text-gray-400 text-xs"><%=u.email%></p></div></div></td>
-                <td class="px-5 py-4 font-mono text-xs text-gray-500"><%=u.alumniId%></td>
-                <td class="px-5 py-4 text-gray-500 text-xs"><%=u.membershipAppliedAt?new Date(u.membershipAppliedAt).toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'}):'-'%></td>
-                <td class="px-5 py-4"><span class="text-xs font-bold px-2.5 py-1 rounded-full <%=u.membershipStatus==='approved'?'badge-life':u.membershipStatus==='pending'?'bg-amber-100 text-amber-700':u.membershipStatus==='rejected'?'bg-red-100 text-red-700':'bg-gray-100 text-gray-500'%>"><%=u.membershipStatus%></span></td>
-                <td class="px-5 py-4"><div class="flex items-center gap-2"><%if(u.membershipStatus==='pending'){%><button onclick="approveMem('<%=u._id%>',this)" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-check mr-1"></i>Approve</button><button onclick="rejectMem('<%=u._id%>')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-xmark mr-1"></i>Reject</button><%}%><a href="mailto:<%=u.email%>" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1.5 rounded-lg" title="Email"><i class="fa-solid fa-envelope"></i></a></div></td>
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni ID</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Applied On</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Payment</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Status</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Actions</th>
               </tr>
-              <%})}else{%><tr><td colspan="5" class="px-5 py-12 text-center text-gray-400"><i class="fa-solid fa-id-card text-3xl mb-2 block text-gray-200"></i>No membership requests found</td></tr><%}%>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <% if (users && users.length > 0) { users.forEach(u => { %>
+              <tr class="hover:bg-gray-50" id="mrow-<%= u._id %>">
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-sm overflow-hidden">
+                      <% if (u.avatar) { %><img src="<%= u.avatar %>" class="w-full h-full object-cover"><% } else { %><%= u.name.charAt(0) %><% } %>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-gray-800"><%= u.name %></p>
+                      <p class="text-gray-400 text-xs"><%= u.email %></p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 font-mono text-xs text-gray-500"><%= u.alumniId || 'N/A' %></td>
+                <td class="px-5 py-4 text-gray-500 text-xs">
+                  <%= u.membershipAppliedAt ? new Date(u.membershipAppliedAt).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) : '-' %>
+                </td>
+                <td class="px-5 py-4">
+                  <% if (u.paidPayment) { %>
+                  <div class="text-xs">
+                    <span class="font-bold text-emerald-600">₹<%= u.paidPayment.amount.toLocaleString('en-IN') %></span>
+                    <span class="text-gray-400 ml-1"><%= new Date(u.paidPayment.paidAt).toLocaleDateString('en-IN') %></span>
+                    <br><span class="text-gray-400 font-mono"><%= u.paidPayment.receiptNumber %></span>
+                  </div>
+                  <% } else { %>
+                  <span class="text-xs text-gray-400">
+                    <% if (u.membershipStatus === 'pending') { %>
+                      <i class="fa-solid fa-clock text-amber-500 mr-1"></i>Payment pending
+                    <% } else { %>—<% } %>
+                  </span>
+                  <% } %>
+                </td>
+                <td class="px-5 py-4">
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-full
+                    <%= u.membershipStatus === 'approved' ? 'badge-life' : u.membershipStatus === 'pending' ? 'bg-amber-100 text-amber-700' : u.membershipStatus === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500' %>">
+                    <%= u.membershipStatus === 'approved' ? '★ Life Member' : u.membershipStatus.charAt(0).toUpperCase() + u.membershipStatus.slice(1) %>
+                  </span>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-2">
+                    <% if (u.membershipStatus === 'pending') { %>
+                    <button onclick="approveMem('<%= u._id %>', this)"
+                      class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-3 py-1.5 rounded-lg transition">
+                      <i class="fa-solid fa-check mr-1"></i>Approve
+                    </button>
+                    <button onclick="rejectMem('<%= u._id %>')"
+                      class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-3 py-1.5 rounded-lg transition">
+                      <i class="fa-solid fa-xmark mr-1"></i>Reject
+                    </button>
+                    <% } %>
+                    <a href="mailto:<%= u.email %>" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1.5 rounded-lg hover:bg-blue-100" title="Email">
+                      <i class="fa-solid fa-envelope"></i>
+                    </a>
+                    <% if (u.paidPayment) { %>
+                    <a href="/payments/receipt/<%= u.paidPayment._id %>" class="text-xs bg-gray-50 text-gray-600 border border-gray-200 px-2 py-1.5 rounded-lg hover:bg-gray-100" title="Receipt">
+                      <i class="fa-solid fa-receipt"></i>
+                    </a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% }) } else { %>
+              <tr>
+                <td colspan="6" class="px-5 py-12 text-center text-gray-400">
+                  <i class="fa-solid fa-id-card text-3xl mb-2 block text-gray-200"></i>
+                  No <%= status === 'all' ? '' : status %> membership requests
+                </td>
+              </tr>
+              <% } %>
             </tbody>
           </table>
         </div>
       </div>
+
+      <!-- Mobile Cards -->
+      <div class="sm:hidden space-y-3">
+        <% if (users && users.length > 0) { users.forEach(u => { %>
+        <div class="bg-white rounded-2xl border border-gray-100 p-4" id="mrow-mob-<%= u._id %>">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-blue-700 overflow-hidden flex-shrink-0">
+              <% if (u.avatar) { %><img src="<%= u.avatar %>" class="w-full h-full object-cover"><% } else { %><%= u.name.charAt(0) %><% } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-800 truncate"><%= u.name %></p>
+              <p class="text-gray-400 text-xs"><%= u.alumniId || u.email %></p>
+            </div>
+            <span class="text-xs font-bold px-2 py-1 rounded-full flex-shrink-0
+              <%= u.membershipStatus === 'approved' ? 'badge-life' : u.membershipStatus === 'pending' ? 'bg-amber-100 text-amber-700' : u.membershipStatus === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500' %>">
+              <%= u.membershipStatus %>
+            </span>
+          </div>
+          <% if (u.paidPayment) { %>
+          <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-3 text-xs">
+            <span class="font-bold text-emerald-700">Payment: ₹<%= u.paidPayment.amount.toLocaleString('en-IN') %></span>
+            <span class="text-emerald-600 ml-2"><%= new Date(u.paidPayment.paidAt).toLocaleDateString('en-IN') %></span>
+          </div>
+          <% } %>
+          <% if (u.membershipStatus === 'pending') { %>
+          <div class="flex gap-2">
+            <button onclick="approveMem('<%= u._id %>', this)" class="flex-1 text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
+              <i class="fa-solid fa-check mr-1"></i>Approve
+            </button>
+            <button onclick="rejectMem('<%= u._id %>')" class="flex-1 text-sm bg-red-50 text-red-600 border border-red-200 font-semibold py-2.5 rounded-xl transition">
+              <i class="fa-solid fa-xmark mr-1"></i>Reject
+            </button>
+          </div>
+          <% } %>
+        </div>
+        <% }) } else { %>
+        <div class="text-center py-12 bg-white rounded-2xl border border-gray-100">
+          <i class="fa-solid fa-id-card text-4xl text-gray-200 mb-3 block"></i>
+          <p class="text-gray-400 font-semibold">No membership requests</p>
+        </div>
+        <% } %>
+      </div>
+
     </div>
   </main>
 </div>
+
 <script>
-async function approveMem(id,btn){if(!confirm('Approve life membership?'))return;btn.disabled=true;const r=await fetch(`/admin/memberships/${id}/approve`,{method:'POST'});const d=await r.json();if(d.success){document.getElementById(`mrow-${id}`)?.remove();alert('Membership approved & email sent!');}else{alert(d.message);btn.disabled=false;}}
-async function rejectMem(id){const reason=prompt('Rejection reason:');if(!reason)return;const r=await fetch(`/admin/memberships/${id}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})});const d=await r.json();if(d.success)document.getElementById(`mrow-${id}`)?.remove();else alert(d.message);}
+async function approveMem(id, btn) {
+  if (!confirm('Approve life membership for this alumni? This will also verify their account.')) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Approving...';
+  try {
+    const r = await fetch(`/admin/memberships/${id}/approve`, { method: 'POST' });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById(`mrow-${id}`)?.remove();
+      document.getElementById(`mrow-mob-${id}`)?.remove();
+      // Show toast
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-5 right-5 z-50 flex items-center gap-3 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold';
+      toast.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Membership approved & email sent!</span>';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    } else {
+      alert('Error: ' + d.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve';
+    }
+  } catch (err) {
+    alert('Network error: ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve';
+  }
+}
+
+async function rejectMem(id) {
+  const reason = prompt('Enter rejection reason (required):');
+  if (!reason || !reason.trim()) return;
+  try {
+    const r = await fetch(`/admin/memberships/${id}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: reason.trim() })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById(`mrow-${id}`)?.remove();
+      document.getElementById(`mrow-mob-${id}`)?.remove();
+    } else {
+      alert('Error: ' + d.message);
+    }
+  } catch (err) {
+    alert('Network error: ' + err.message);
+  }
+}
 </script>
 </body>
 </html>

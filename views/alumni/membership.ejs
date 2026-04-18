@@ -4,79 +4,105 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title><%= title %></title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}},fontFamily:{display:['"Playfair Display"','Georgia','serif']}}}}</script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}}}}}</script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+  <style>
+    body{font-family:'Source Sans 3',system-ui,sans-serif;}
+    .gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}
+    .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.1);}
+    .badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}
+  </style>
 </head>
 <body class="bg-gray-50">
-<div class="flex min-h-screen md:min-h-screen">
+<div class="flex min-h-screen">
   <% locals.currentPath = '/alumni/membership'; %>
   <%- include('../partials/alumni-sidebar') %>
 
   <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
     <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
-      <h1 class="text-xl font-bold text-navy-800">Life Membership</h1>
+      <h1 class="text-xl font-bold" style="color:#1e3a5f">Life Membership</h1>
       <p class="text-gray-500 text-sm">Become a lifetime member of SVPM Alumni Association</p>
     </div>
 
     <div class="p-4 sm:p-6 max-w-3xl">
+
+      <!-- Flash messages -->
       <% if (locals.success_msg && success_msg.length > 0) { %>
-      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-check"></i><%= success_msg %></div>
+      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm">
+        <i class="fa-solid fa-circle-check"></i><span><%= success_msg %></span>
+      </div>
       <% } %>
       <% if (locals.error_msg && error_msg.length > 0) { %>
-      <div class="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm"><i class="fa-solid fa-circle-exclamation"></i><%= error_msg %></div>
+      <div class="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+        <i class="fa-solid fa-circle-exclamation"></i><span><%= error_msg %></span>
+      </div>
       <% } %>
 
       <!-- Status Banner -->
       <% if (user.membershipStatus === 'approved') { %>
-      <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-6 mb-6 text-white">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+      <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-5 sm:p-6 mb-6 text-white">
+        <div class="flex items-center gap-4 flex-wrap">
+          <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
             <i class="fa-solid fa-certificate text-3xl"></i>
           </div>
-          <div>
-            <h2 class="font-display text-2xl font-bold">Life Member</h2>
+          <div class="flex-1">
+            <h2 class="font-display text-xl sm:text-2xl font-bold">🎉 Life Member</h2>
             <p class="text-emerald-100 text-sm">You are a verified Life Member of SVPM Alumni Association</p>
           </div>
-          <a href="/alumni/certificate" class="ml-auto bg-white text-emerald-700 font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition flex items-center gap-2">
+          <a href="/alumni/certificate" class="bg-white text-emerald-700 font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition flex items-center gap-2 flex-shrink-0">
             <i class="fa-solid fa-download"></i> Certificate
           </a>
         </div>
       </div>
+
       <% } else if (user.membershipStatus === 'pending') { %>
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-center gap-4">
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
         <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
           <i class="fa-solid fa-hourglass-half text-amber-600 text-xl"></i>
         </div>
         <div>
           <h3 class="font-bold text-amber-800">Application Under Review</h3>
-          <p class="text-amber-700 text-sm mt-0.5">Your payment has been received. Awaiting admin approval for your Life Membership.</p>
+          <p class="text-amber-700 text-sm mt-1">
+            <% if (payment) { %>
+              Your payment of ₹<%= payment.amount.toLocaleString('en-IN') %> was received on <%= new Date(payment.paidAt).toLocaleDateString('en-IN') %>.
+              Awaiting admin approval — usually within 1–2 business days.
+            <% } else { %>
+              Your application is pending. If you haven't completed payment yet, please click "Pay Now" below.
+            <% } %>
+          </p>
         </div>
       </div>
+
       <% } else if (user.membershipStatus === 'rejected') { %>
       <div class="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
-        <div class="font-bold text-red-800 mb-1">Membership Rejected</div>
-        <p class="text-red-700 text-sm">Reason: <%= user.membershipRejectionReason || 'Please contact admin.' %></p>
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-circle-exclamation text-red-600 text-xl mt-0.5"></i>
+          <div>
+            <p class="font-bold text-red-800">Membership Application Not Approved</p>
+            <p class="text-red-700 text-sm mt-1">Reason: <%= user.membershipRejectionReason || 'Please contact admin for details.' %></p>
+            <p class="text-red-600 text-xs mt-2">You may re-apply below after addressing the issue.</p>
+          </div>
+        </div>
       </div>
       <% } %>
 
       <!-- Benefits Section -->
-      <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+      <div class="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 mb-6">
         <h3 class="font-bold text-navy-800 text-lg mb-5 flex items-center gap-2">
-          <i class="fa-solid fa-star text-gold-500"></i> Life Membership Benefits
+          <i class="fa-solid fa-star text-yellow-500"></i> Life Membership Benefits
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <% const benefits = [
+          <% [
             { icon: 'fa-certificate', text: 'Official Membership Certificate (PDF)' },
             { icon: 'fa-address-book', text: 'Full access to Alumni Directory' },
             { icon: 'fa-calendar-days', text: 'Priority registration for events' },
-            { icon: 'fa-id-card', text: 'Unique Life Member Badge' },
+            { icon: 'fa-id-card', text: 'Unique Life Member Badge on profile' },
             { icon: 'fa-receipt', text: 'Digital payment receipts' },
             { icon: 'fa-bell', text: 'Exclusive announcements & updates' }
-          ]; %>
-          <% benefits.forEach(b => { %>
+          ].forEach(b => { %>
           <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
             <div class="w-8 h-8 rounded-lg bg-navy-100 flex items-center justify-center flex-shrink-0">
               <i class="fa-solid <%= b.icon %> text-navy-600 text-xs"></i>
@@ -87,62 +113,70 @@
         </div>
       </div>
 
-      <!-- Payment Card -->
-      <% if (user.membershipStatus === 'none' || user.membershipStatus === 'rejected') { %>
+      <!-- Payment Card — show if not yet approved -->
+      <% if (user.membershipStatus !== 'approved') { %>
       <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div class="gradient-header p-5 flex items-center justify-between">
+        <div class="gradient-header p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 class="text-white font-display font-bold text-xl">One-Time Life Membership Fee</h3>
             <p class="text-navy-300 text-sm">Pay once, stay connected for life</p>
           </div>
-          <div class="text-right">
-            <div class="text-gold-400 font-display font-bold text-4xl">₹<%= membershipAmount %></div>
-            <div class="text-navy-300 text-xs">One-time payment</div>
+          <div class="text-left sm:text-right">
+            <div class="text-gold-400 font-display font-bold text-4xl">₹<%= membershipAmount.toLocaleString('en-IN') %></div>
+            <div class="text-navy-300 text-xs">One-time payment only</div>
           </div>
         </div>
-        <div class="p-4 sm:p-6">
+        <div class="p-5 sm:p-6">
           <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <i class="fa-solid fa-shield-halved text-blue-600 text-lg"></i>
+            <i class="fa-solid fa-shield-halved text-blue-600 text-lg flex-shrink-0"></i>
             <div>
               <p class="text-blue-800 font-semibold text-sm">Secure Payment via Razorpay</p>
-              <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card accepted</p>
+              <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card, Wallets accepted</p>
             </div>
           </div>
 
-          <!-- Payment Methods -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <% ['UPI', 'Card', 'Net Banking', 'Wallet'].forEach(m => { %>
+            <% [
+              { label: 'UPI', icon: 'fa-mobile-screen-button' },
+              { label: 'Card', icon: 'fa-credit-card' },
+              { label: 'Net Banking', icon: 'fa-building-columns' },
+              { label: 'Wallet', icon: 'fa-wallet' }
+            ].forEach(m => { %>
             <div class="border border-gray-100 rounded-xl p-2.5 text-center text-xs font-semibold text-gray-600 bg-gray-50">
-              <i class="fa-solid <%= m === 'UPI' ? 'fa-mobile-screen-button' : m === 'Card' ? 'fa-credit-card' : m === 'Net Banking' ? 'fa-building-columns' : 'fa-wallet' %> text-lg text-navy-600 block mb-1"></i>
-              <%= m %>
+              <i class="fa-solid <%= m.icon %> text-lg text-navy-600 block mb-1"></i>
+              <%= m.label %>
             </div>
             <% }) %>
           </div>
 
           <button id="pay-btn" onclick="initiatePayment()"
-            class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-lg flex items-center justify-center gap-3">
+            class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-base flex items-center justify-center gap-3">
             <i class="fa-solid fa-lock"></i>
-            Pay ₹<%= membershipAmount %> — Apply for Life Membership
+            <span id="pay-btn-text">Pay ₹<%= membershipAmount.toLocaleString('en-IN') %> — Apply for Life Membership</span>
           </button>
           <p class="text-center text-gray-400 text-xs mt-3">
             <i class="fa-solid fa-info-circle mr-1"></i>
-            After payment, your membership will be reviewed and approved by admin within 2-3 business days.
+            After payment, your membership will be reviewed and approved by admin within 1–2 business days.
           </p>
         </div>
       </div>
       <% } %>
 
-      <!-- Existing Payment Receipt -->
+      <!-- Payment Receipt (if paid) -->
       <% if (payment) { %>
       <div class="mt-6 bg-white rounded-2xl border border-gray-100 p-5">
-        <h4 class="font-bold text-navy-800 mb-4">Payment Receipt</h4>
+        <h4 class="font-bold text-navy-800 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-receipt text-navy-600"></i> Payment Receipt
+        </h4>
         <div class="grid grid-cols-2 gap-3 text-sm mb-4">
-          <div><span class="text-gray-500">Receipt No.</span><br><span class="font-mono font-semibold text-gray-800"><%= payment.receiptNumber %></span></div>
-          <div><span class="text-gray-500">Amount</span><br><span class="font-bold text-emerald-600">₹<%= payment.amount %></span></div>
-          <div><span class="text-gray-500">Date</span><br><span class="text-gray-800"><%= payment.paidAt ? new Date(payment.paidAt).toLocaleDateString('en-IN') : '-' %></span></div>
-          <div><span class="text-gray-500">Status</span><br><span class="font-semibold capitalize text-emerald-600"><%= payment.status %></span></div>
+          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Receipt No.</span><br><span class="font-mono font-semibold text-gray-800"><%= payment.receiptNumber %></span></div>
+          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Amount</span><br><span class="font-bold text-emerald-600 text-lg">₹<%= payment.amount.toLocaleString('en-IN') %></span></div>
+          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Date</span><br><span class="text-gray-800"><%= payment.paidAt ? new Date(payment.paidAt).toLocaleDateString('en-IN', {year:'numeric',month:'long',day:'numeric'}) : '-' %></span></div>
+          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Status</span><br><span class="font-semibold text-emerald-600 capitalize"><%= payment.status %></span></div>
         </div>
-        <a href="/payments/receipt/<%= payment._id %>" class="inline-flex items-center gap-2 bg-navy-100 hover:bg-navy-200 text-navy-700 font-semibold text-sm px-4 py-2 rounded-xl transition">
+        <a href="/payments/receipt/<%= payment._id %>"
+          class="inline-flex items-center gap-2 font-semibold text-sm px-4 py-2 rounded-xl transition"
+          style="background:#1e3a5f;color:white;">
           <i class="fa-solid fa-download"></i> Download Receipt PDF
         </a>
       </div>
@@ -153,70 +187,122 @@
 </div>
 
 <script>
+const MEMBERSHIP_AMOUNT = <%= membershipAmount %>;
+const USER_NAME = '<%= user.name.replace(/'/g, "\\'") %>';
+const USER_EMAIL = '<%= user.email %>';
+const USER_PHONE = '<%= user.phone || "" %>';
+
 async function initiatePayment() {
   const btn = document.getElementById('pay-btn');
+  const btnText = document.getElementById('pay-btn-text');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Creating order...';
+  btnText.textContent = 'Creating order...';
+  btn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
+
+  const reset = () => {
+    btn.disabled = false;
+    btnText.textContent = `Pay ₹${MEMBERSHIP_AMOUNT.toLocaleString('en-IN')} — Apply for Life Membership`;
+    btn.querySelector('i').className = 'fa-solid fa-lock';
+  };
 
   try {
-    const res = await fetch('/alumni/membership/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+    const res = await fetch('/alumni/membership/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
     const data = await res.json();
-    if (!data.success) throw new Error(data.message);
 
-    // If no Razorpay key, show demo message
-    if (!data.key || data.key === '' || data.orderId.includes('demo')) {
-      alert('Demo mode: Razorpay not configured. In production, configure RAZORPAY_KEY_ID in .env');
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= membershipAmount %> — Apply for Life Membership';
-      return;
+    if (!data.success) {
+      alert('Error: ' + data.message);
+      return reset();
     }
 
-    const options = {
-      key: data.key,
-      amount: data.amount,
-      currency: data.currency,
-      name: 'SVPM Alumni Association',
-      description: 'Life Membership Fee',
-      order_id: data.orderId,
-      handler: async function(response) {
+    // Demo mode — no Razorpay configured
+    if (data.demo || !data.key) {
+      if (confirm('Demo Mode: Razorpay is not configured. Click OK to simulate a successful payment (for testing only).')) {
         const verifyRes = await fetch('/alumni/membership/verify-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
+            razorpay_order_id: data.orderId,
+            razorpay_payment_id: 'demo_pay_' + Date.now(),
+            razorpay_signature: 'demo',
             payment_id: data.paymentId
           })
         });
         const vData = await verifyRes.json();
         if (vData.success) {
-          window.location.href = '/alumni/membership?success=payment';
+          window.location.href = '/alumni/membership?success=1';
         } else {
-          alert('Payment verification failed. Contact admin.');
+          alert('Demo payment failed: ' + vData.message);
+          reset();
+        }
+      } else {
+        reset();
+      }
+      return;
+    }
+
+    // Real Razorpay
+    const options = {
+      key: data.key,
+      amount: data.amount,
+      currency: data.currency || 'INR',
+      name: 'SVPM Alumni Association',
+      description: 'Life Membership Fee',
+      order_id: data.orderId,
+      handler: async function(response) {
+        btnText.textContent = 'Verifying payment...';
+        try {
+          const verifyRes = await fetch('/alumni/membership/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              payment_id: data.paymentId
+            })
+          });
+          const vData = await verifyRes.json();
+          if (vData.success) {
+            window.location.href = '/alumni/membership?success=1';
+          } else {
+            alert('Payment verification failed: ' + vData.message + '\nPlease contact admin with your payment ID: ' + response.razorpay_payment_id);
+            reset();
+          }
+        } catch (err) {
+          alert('Verification error: ' + err.message);
+          reset();
         }
       },
-      prefill: {
-        name: '<%= user.name %>',
-        email: '<%= user.email %>',
-        contact: '<%= user.phone || "" %>'
-      },
+      prefill: { name: USER_NAME, email: USER_EMAIL, contact: USER_PHONE },
       theme: { color: '#1e3a5f' },
       modal: {
-        ondismiss: () => {
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= membershipAmount %> — Apply for Life Membership';
-        }
+        ondismiss: () => reset()
       }
     };
 
     const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(response) {
+      alert('Payment failed: ' + response.error.description);
+      reset();
+    });
     rzp.open();
   } catch (err) {
     alert('Error: ' + err.message);
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay ₹<%= membershipAmount %> — Apply for Life Membership';
+    reset();
   }
+}
+
+// Show success message if redirected after payment
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success')) {
+  const toast = document.createElement('div');
+  toast.className = 'fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold flex items-center gap-2';
+  toast.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Payment successful! Your membership is under review.</span>';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
 }
 </script>
 </body>

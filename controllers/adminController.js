@@ -14,7 +14,8 @@ exports.getDashboard = async (req, res) => {
       User.countDocuments({ role: 'alumni', isVerified: false }),
       User.countDocuments({ role: 'alumni', isVerified: true }),
       Payment.aggregate([{ $match: { status: 'paid' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
-      User.find({ role: 'alumni', isVerified: false }).sort('-createdAt').limit(6),
+      // FIX: show ALL recent registrations, not just unverified
+      User.find({ role: 'alumni' }).sort('-createdAt').limit(6),
       User.find({ role: 'alumni', membershipStatus: 'pending' }).sort('-membershipAppliedAt').limit(5),
       Payment.find({ status: 'paid' }).populate('user', 'name alumniId').sort('-paidAt').limit(5),
       Event.find({ date: { $gte: new Date() }, isActive: true }).sort('date').limit(4)
@@ -79,11 +80,25 @@ exports.approveAlumni = async (req, res) => {
       { isVerified: true }, { new: true });
     if (!user) return res.json({ success: false, message: 'User not found' });
 
-    await sendEmail({
-      to: user.email,
-      subject: 'Account Approved — SVPM Alumni',
-      html: `<div style="font-family: Arial, sans-serif;"><h2 style="color:#1e3a5f;">Your alumni account has been approved!</h2><p>Welcome, ${user.name}. You can now log in and access all features.</p><a href="${process.env.APP_URL}/alumni/dashboard" style="background:#2d6a9f;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;">Go to Dashboard</a></div>`
-    });
+    try {
+      const appUrl = process.env.APP_URL || 'http://localhost:3000';
+      await sendEmail({
+        to: user.email,
+        subject: 'Account Approved — SVPM Alumni',
+        html: `<div style="font-family:Arial,sans-serif;max-width:600px;">
+          <div style="background:#1e3a5f;padding:30px;text-align:center;">
+            <h1 style="color:#fff;margin:0;">Account Approved!</h1>
+          </div>
+          <div style="padding:30px;">
+            <h2 style="color:#1e3a5f;">Welcome, ${user.name}!</h2>
+            <p>Your alumni account has been approved. You can now log in and access all features.</p>
+            <a href="${appUrl}/alumni/dashboard" style="background:#2d6a9f;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:15px;">Go to Dashboard</a>
+          </div>
+        </div>`
+      });
+    } catch (emailErr) {
+      console.error('Email error (non-fatal):', emailErr.message);
+    }
 
     res.json({ success: true, message: 'Alumni approved' });
   } catch (err) {
@@ -121,9 +136,20 @@ exports.getMemberships = async (req, res) => {
     const query = { role: 'alumni' };
     if (status !== 'all') query.membershipStatus = status;
 
+    // Also get the paid payment for each user to show payment info
     const users = await User.find(query).sort('-membershipAppliedAt');
-    res.render('admin/memberships', { title: 'Membership Requests', users, status });
+
+    // Attach payment info to each user
+    const usersWithPayments = await Promise.all(users.map(async (u) => {
+      const payment = await Payment.findOne({
+        user: u._id, purpose: 'life_membership', status: 'paid'
+      }).sort('-paidAt');
+      return { ...u.toObject(), paidPayment: payment };
+    }));
+
+    res.render('admin/memberships', { title: 'Membership Requests', users: usersWithPayments, status });
   } catch (err) {
+    console.error(err);
     req.flash('error_msg', 'Error loading memberships');
     res.redirect('/admin/dashboard');
   }
@@ -134,13 +160,20 @@ exports.approveMembership = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, {
       membershipStatus: 'approved',
-      membershipApprovedAt: new Date()
+      membershipApprovedAt: new Date(),
+      isVerified: true // CRITICAL FIX: also verify account when approving membership
     }, { new: true });
 
-    const tmpl = emailTemplates.membershipApproved(user);
-    await sendEmail({ to: user.email, ...tmpl });
+    if (!user) return res.json({ success: false, message: 'User not found' });
 
-    res.json({ success: true, message: 'Membership approved' });
+    try {
+      const tmpl = emailTemplates.membershipApproved(user);
+      await sendEmail({ to: user.email, ...tmpl });
+    } catch (emailErr) {
+      console.error('Email error (non-fatal):', emailErr.message);
+    }
+
+    res.json({ success: true, message: 'Life membership approved!' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -149,17 +182,30 @@ exports.approveMembership = async (req, res) => {
 // POST /admin/memberships/:id/reject
 exports.rejectMembership = async (req, res) => {
   try {
+    const { reason } = req.body;
     const user = await User.findByIdAndUpdate(req.params.id, {
       membershipStatus: 'rejected',
       membershipRejectedAt: new Date(),
-      membershipRejectionReason: req.body.reason
+      membershipRejectionReason: reason || 'No reason provided'
     }, { new: true });
 
-    await sendEmail({
-      to: user.email,
-      subject: 'Membership Application Update — SVPM Alumni',
-      html: `<p>Dear ${user.name}, your life membership application was not approved at this time. Reason: ${req.body.reason || 'N/A'}. Please contact us for more information.</p>`
-    });
+    if (!user) return res.json({ success: false, message: 'User not found' });
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Membership Application Update — SVPM Alumni',
+        html: `<div style="font-family:Arial,sans-serif;max-width:600px;padding:30px;">
+          <h2 style="color:#1e3a5f;">Membership Application Update</h2>
+          <p>Dear ${user.name},</p>
+          <p>Your life membership application was not approved at this time.</p>
+          <p><strong>Reason:</strong> ${reason || 'Please contact the admin for details.'}</p>
+          <p>You may re-apply after addressing the above concern. Contact us at <a href="mailto:${process.env.COLLEGE_EMAIL || 'info@svpmcoe.edu.in'}">${process.env.COLLEGE_EMAIL || 'info@svpmcoe.edu.in'}</a></p>
+        </div>`
+      });
+    } catch (emailErr) {
+      console.error('Email error (non-fatal):', emailErr.message);
+    }
 
     res.json({ success: true, message: 'Membership rejected' });
   } catch (err) {
@@ -171,14 +217,18 @@ exports.rejectMembership = async (req, res) => {
 exports.getPayments = async (req, res) => {
   try {
     const { status, page = 1 } = req.query;
-    const query = status ? { status } : {};
+    const query = {};
+    if (status && ['paid', 'created', 'failed', 'refunded'].includes(status)) {
+      query.status = status;
+    }
     const limit = 15;
     const skip = (parseInt(page) - 1) * limit;
     const total = await Payment.countDocuments(query);
-    const payments = await Payment.find(query).populate('user', 'name email alumniId')
+    const payments = await Payment.find(query)
+      .populate('user', 'name email alumniId')
       .sort('-createdAt').skip(skip).limit(limit);
 
-    const revenue = await Payment.aggregate([
+    const revenueAgg = await Payment.aggregate([
       { $match: { status: 'paid' } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
@@ -187,7 +237,8 @@ exports.getPayments = async (req, res) => {
       title: 'Payment Management',
       payments, total, page: parseInt(page),
       totalPages: Math.ceil(total / limit),
-      revenue: revenue[0]?.total || 0, query: req.query
+      revenue: revenueAgg[0]?.total || 0,
+      query: req.query
     });
   } catch (err) {
     req.flash('error_msg', 'Error loading payments');
@@ -195,7 +246,7 @@ exports.getPayments = async (req, res) => {
   }
 };
 
-// GET /admin/export
+// GET /admin/export/alumni
 exports.exportAlumni = async (req, res) => {
   try {
     const alumni = await User.find({ role: 'alumni' }).lean();
@@ -207,7 +258,9 @@ exports.exportAlumni = async (req, res) => {
       'Branch': a.profile?.branch || '',
       'Pass Out Year': a.profile?.passOutYear || '',
       'Company': a.profile?.company || '',
+      'Designation': a.profile?.designation || '',
       'Location': a.profile?.location || '',
+      'LinkedIn': a.profile?.linkedin || '',
       'Membership Status': a.membershipStatus,
       'Account Verified': a.isVerified ? 'Yes' : 'No',
       'Registered On': new Date(a.createdAt).toLocaleDateString('en-IN')
@@ -216,13 +269,14 @@ exports.exportAlumni = async (req, res) => {
     const ws = xlsx.utils.json_to_sheet(data);
     const wb = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(wb, ws, 'Alumni');
-
     const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
     res.setHeader('Content-Disposition', `attachment; filename=SVPM-Alumni-${Date.now()}.xlsx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.send(buf);
   } catch (err) {
-    req.flash('error_msg', 'Export failed');
+    console.error(err);
+    req.flash('error_msg', 'Export failed: ' + err.message);
     res.redirect('/admin/alumni');
   }
 };
@@ -244,22 +298,33 @@ exports.getEvents = async (req, res) => {
 // POST /admin/events
 exports.createEvent = async (req, res) => {
   try {
-    const { title, description, date, endDate, venue, type, isFree, fee, maxAttendees, isFeatured } = req.body;
+    const { title, description, date, endDate, venue, type, fee, maxAttendees } = req.body;
+
+    if (!title || !description || !date || !venue) {
+      req.flash('error_msg', 'Title, description, date and venue are required');
+      return res.redirect('/admin/events');
+    }
 
     await Event.create({
-      title, description, date, endDate, venue, type,
-      isFree: isFree === 'on',
+      title: title.trim(),
+      description: description.trim(),
+      date: new Date(date),
+      endDate: endDate ? new Date(endDate) : undefined,
+      venue: venue.trim(),
+      type: type || 'other',
+      isFree: req.body.isFree === 'on' || !fee || parseFloat(fee) === 0,
       fee: parseFloat(fee) || 0,
       maxAttendees: parseInt(maxAttendees) || 0,
-      isFeatured: isFeatured === 'on',
-      createdBy: req.user._id
+      isFeatured: req.body.isFeatured === 'on',
+      createdBy: req.user._id,
+      isActive: true
     });
 
     req.flash('success_msg', 'Event created successfully');
     res.redirect('/admin/events');
   } catch (err) {
     console.error(err);
-    req.flash('error_msg', 'Error creating event');
+    req.flash('error_msg', 'Error creating event: ' + err.message);
     res.redirect('/admin/events');
   }
 };
@@ -279,7 +344,9 @@ exports.deleteEvent = async (req, res) => {
 // GET /admin/announcements
 exports.getAnnouncements = async (req, res) => {
   try {
-    const announcements = await Announcement.find().populate('createdBy', 'name').sort('-createdAt');
+    const announcements = await Announcement.find()
+      .populate('createdBy', 'name')
+      .sort('-createdAt');
     res.render('admin/announcements', { title: 'Announcements', announcements });
   } catch (err) {
     req.flash('error_msg', 'Error loading announcements');
@@ -290,11 +357,27 @@ exports.getAnnouncements = async (req, res) => {
 // POST /admin/announcements
 exports.createAnnouncement = async (req, res) => {
   try {
-    await Announcement.create({ ...req.body, createdBy: req.user._id });
-    req.flash('success_msg', 'Announcement created');
+    const { title, content, type } = req.body;
+
+    if (!title || !content) {
+      req.flash('error_msg', 'Title and content are required');
+      return res.redirect('/admin/announcements');
+    }
+
+    // FIX: sanitize fields individually instead of spreading req.body
+    await Announcement.create({
+      title: title.trim(),
+      content: content.trim(),
+      type: ['general', 'urgent', 'event', 'membership'].includes(type) ? type : 'general',
+      isPublished: req.body.isPublished === 'on' || req.body.isPublished === 'true' || req.body.isPublished === true,
+      createdBy: req.user._id
+    });
+
+    req.flash('success_msg', 'Announcement published successfully');
     res.redirect('/admin/announcements');
   } catch (err) {
-    req.flash('error_msg', 'Error creating announcement');
+    console.error(err);
+    req.flash('error_msg', 'Error creating announcement: ' + err.message);
     res.redirect('/admin/announcements');
   }
 };

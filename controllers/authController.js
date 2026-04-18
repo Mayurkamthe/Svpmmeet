@@ -86,7 +86,14 @@ exports.postLogin = async (req, res) => {
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
 
-    const redirect = user.role === 'admin' ? '/admin/dashboard' : '/alumni/dashboard';
+    let redirect;
+    if (user.role === 'admin') {
+      redirect = '/admin/dashboard';
+    } else if (!user.isVerified) {
+      redirect = '/alumni/pending';
+    } else {
+      redirect = '/alumni/dashboard';
+    }
     res.redirect(redirect);
   } catch (err) {
     console.error('Login error:', err);
@@ -149,9 +156,18 @@ exports.firebaseAuth = async (req, res) => {
     req.session.token = token;
     req.session.user = user.toPublicJSON();
 
+    let redirectUrl;
+    if (user.role === 'admin') {
+      redirectUrl = '/admin/dashboard';
+    } else if (!user.isVerified) {
+      redirectUrl = '/alumni/pending';
+    } else {
+      redirectUrl = '/alumni/dashboard';
+    }
+
     res.json({
       success: true,
-      redirect: user.role === 'admin' ? '/admin/dashboard' : '/alumni/dashboard'
+      redirect: redirectUrl
     });
   } catch (err) {
     console.error('Firebase auth error:', err);
