@@ -195,10 +195,11 @@ exports.verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, payment_id } = req.body;
 
-    if (!razorpay_signature) {
-      return res.json({ success: false, message: 'Payment signature missing' });
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.json({ success: false, message: 'Payment details missing. Please try again.' });
     }
 
+    // Verify Razorpay signature
     const body = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -209,34 +210,49 @@ exports.verifyPayment = async (req, res) => {
       return res.json({ success: false, message: 'Payment verification failed. Invalid signature.' });
     }
 
-    const payment = await Payment.findByIdAndUpdate(payment_id, {
-      razorpayPaymentId: razorpay_payment_id,
-      razorpaySignature: razorpay_signature,
-      status: 'paid',
-      paidAt: new Date()
+    // Find payment record — try by ID first, fall back to order ID
+    let payment = null;
+    if (payment_id) {
+      payment = await Payment.findById(payment_id);
+    }
+    if (!payment) {
+      payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+    }
+    if (!payment) {
+      return res.json({ success: false, message: 'Payment record not found. Please contact admin with your payment ID: ' + razorpay_payment_id });
+    }
+
+    // Mark payment as paid
+    const paidAt = new Date();
+    payment.razorpayPaymentId = razorpay_payment_id;
+    payment.razorpaySignature = razorpay_signature;
+    payment.status = 'paid';
+    payment.paidAt = paidAt;
+    await payment.save();
+
+    // AUTO-APPROVE membership on successful payment
+    const user = await User.findByIdAndUpdate(req.user._id, {
+      membershipStatus: 'approved',
+      membershipAppliedAt: paidAt,
+      membershipApprovedAt: paidAt,
+      isVerified: true
     }, { new: true });
 
-    if (!payment) {
-      return res.json({ success: false, message: 'Payment record not found' });
-    }
-
-    // CRITICAL FIX: keep membershipStatus = 'pending' so admin can approve
-    // but mark payment as paid so admin sees it
-    await User.findByIdAndUpdate(req.user._id, {
-      membershipStatus: 'pending',
-      membershipAppliedAt: payment.paidAt
-    });
-
-    // Send receipt email (non-blocking)
+    // Send payment receipt + membership approval emails (non-blocking)
     try {
-      const user = await User.findById(req.user._id);
-      const tmpl = emailTemplates.paymentSuccess(user, payment);
-      await sendEmail({ to: user.email, ...tmpl });
+      const receiptTmpl = emailTemplates.paymentSuccess(user, payment);
+      await sendEmail({ to: user.email, ...receiptTmpl });
     } catch (emailErr) {
-      console.error('Email error (non-fatal):', emailErr.message);
+      console.error('Receipt email error (non-fatal):', emailErr.message);
+    }
+    try {
+      const approvalTmpl = emailTemplates.membershipApproved(user);
+      await sendEmail({ to: user.email, ...approvalTmpl });
+    } catch (emailErr) {
+      console.error('Approval email error (non-fatal):', emailErr.message);
     }
 
-    res.json({ success: true, receiptNumber: payment.receiptNumber });
+    res.json({ success: true, receiptNumber: payment.receiptNumber, autoApproved: true });
   } catch (err) {
     console.error('Payment verify error:', err);
     res.status(500).json({ success: false, message: 'Payment verification error: ' + err.message });

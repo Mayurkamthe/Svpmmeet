@@ -167,7 +167,7 @@
               </button>
               <p class="text-center text-gray-400 text-xs mt-3">
                 <i class="fa-solid fa-info-circle mr-1"></i>
-                After payment, your membership will be reviewed and approved by admin.
+                After successful payment, your membership will be automatically activated.
               </p>
             </div>
           </div>
@@ -295,7 +295,10 @@ async function initiatePayment() {
           });
           const vData = await verifyRes.json();
           if (vData.success) {
-            window.location.href = '/alumni/membership?success=1';
+            showToast();
+            setTimeout(() => {
+              window.location.href = '/alumni/membership?success=1';
+            }, 2500);
           } else {
             alert('Payment verification failed: ' + vData.message + '\nPlease contact admin with your payment ID: ' + response.razorpay_payment_id);
             reset();
@@ -330,7 +333,7 @@ const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('success') === '1') {
   const toast = document.createElement('div');
   toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 transform transition-all duration-500 translate-y-0 opacity-100';
-  toast.innerHTML = '<i class="fa-solid fa-circle-check text-xl"></i><div><h4 class="font-bold">Payment Successful!</h4><p class="text-sm opacity-90">Your membership request is now pending admin approval.</p></div>';
+  toast.innerHTML = '<i class="fa-solid fa-circle-check text-xl"></i><div><h4 class="font-bold">Payment Successful! Membership Approved!</h4><p class="text-sm opacity-90">Your life membership has been activated. You can now download your certificate.</p></div>';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 5000);
 }
