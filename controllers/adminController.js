@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Payment = require('../models/Payment');
 const { Event, EventRegistration } = require('../models/Event');
 const Announcement = require('../models/Announcement');
+const MembershipPlan = require('../models/MembershipPlan');
 const { sendEmail, emailTemplates } = require('../config/email');
 const xlsx = require('xlsx');
 
@@ -390,5 +391,55 @@ exports.deleteAnnouncement = async (req, res) => {
   } catch (err) {
     req.flash('error_msg', 'Error deleting announcement');
     res.redirect('/admin/announcements');
+  }
+};
+
+// GET /admin/membership-plans
+exports.getMembershipPlans = async (req, res) => {
+  try {
+    const plans = await MembershipPlan.find().sort('-createdAt');
+    res.render('admin/membership-plans', {
+      title: 'Manage Membership Plans',
+      user: req.user,
+      plans
+    });
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error loading membership plans');
+    res.redirect('/admin/dashboard');
+  }
+};
+
+// POST /admin/membership-plans
+exports.createMembershipPlan = async (req, res) => {
+  try {
+    const { title, description, amount, benefits, isFeatured } = req.body;
+    await MembershipPlan.create({
+      title: title.trim(),
+      description: description.trim(),
+      amount: parseFloat(amount),
+      benefits: benefits ? benefits.split(',').map(b => b.trim()).filter(b => b) : [],
+      isFeatured: isFeatured === 'on',
+      createdBy: req.user._id
+    });
+    req.flash('success_msg', 'Membership plan created successfully');
+    res.redirect('/admin/membership-plans');
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error creating membership plan: ' + err.message);
+    res.redirect('/admin/membership-plans');
+  }
+};
+
+// DELETE /admin/membership-plans/:id
+exports.deleteMembershipPlan = async (req, res) => {
+  try {
+    await MembershipPlan.findByIdAndDelete(req.params.id);
+    req.flash('success_msg', 'Membership plan deleted successfully');
+    res.redirect('/admin/membership-plans');
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error deleting membership plan');
+    res.redirect('/admin/membership-plans');
   }
 };
