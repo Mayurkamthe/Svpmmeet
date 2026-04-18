@@ -69,6 +69,12 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'MembershipPlan'
   },
+  // Currently active plan (latest paid plan)
+  activeMembershipPlanId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MembershipPlan',
+    default: null
+  },
   membershipPlanIds: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'MembershipPlan'

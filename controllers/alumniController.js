@@ -103,16 +103,43 @@ exports.postEditProfile = async (req, res) => {
 // GET /alumni/membership
 exports.getMembership = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('membershipPlanIds');
-    // All paid membership payments, newest first
+    const user = await User.findById(req.user._id);
+
+    // All paid membership payments for this user, newest first
     const payments = await Payment.find({ user: req.user._id, purpose: 'life_membership', status: 'paid' })
       .populate('planId')
       .sort('-paidAt');
+
     const plans = await MembershipPlan.find({ isActive: true }).sort('amount');
+
+    // Build a Set of plan IDs the user has already paid for (as strings for EJS comparison)
+    const ownedPlanIds = new Set(
+      payments
+        .filter(p => p.planId)
+        .map(p => p.planId._id.toString())
+    );
+
+    // The user's currently active plan (latest purchase)
+    const activePlanId = user.activeMembershipPlanId
+      ? user.activeMembershipPlanId.toString()
+      : (payments[0]?.planId?._id?.toString() || null);
+
     // Latest paid payment for receipt display
     const payment = payments[0] || null;
-    res.render('alumni/membership', { title: 'Life Membership', user, payment, payments, plans });
+
+    console.log(`[getMembership] user=${user._id} activePlanId=${activePlanId} ownedPlanIds=[${[...ownedPlanIds].join(',')}]`);
+
+    res.render('alumni/membership', {
+      title: 'Life Membership',
+      user,
+      payment,
+      payments,
+      plans,
+      ownedPlanIds: [...ownedPlanIds],   // array of strings for JSON serialization
+      activePlanId: activePlanId || null
+    });
   } catch (err) {
+    console.error('getMembership error:', err);
     req.flash('error_msg', 'Error loading membership page');
     res.redirect('/alumni/dashboard');
   }
@@ -222,7 +249,7 @@ exports.verifyPayment = async (req, res) => {
     payment.paidAt = paidAt;
     await payment.save();
 
-    // AUTO-APPROVE: add this plan to user's membershipPlanIds, mark approved
+    // AUTO-APPROVE: record this plan as active, add to history array
     const planId = payment.planId;
     const updateOp = {
       membershipStatus: 'approved',
@@ -231,9 +258,11 @@ exports.verifyPayment = async (req, res) => {
       isVerified: true
     };
     if (planId) {
-      updateOp.$addToSet = { membershipPlanIds: planId };
+      updateOp.activeMembershipPlanId = planId;          // single active plan
+      updateOp.$addToSet = { membershipPlanIds: planId }; // history
     }
     const user = await User.findByIdAndUpdate(req.user._id, updateOp, { new: true });
+    console.log(`[verifyPayment] user=${req.user._id} planId=${planId} activePlanId=${user.activeMembershipPlanId}`);
 
     // Send payment receipt + membership approval emails (non-blocking)
     try {
