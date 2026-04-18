@@ -114,52 +114,69 @@
       </div>
 
       <!-- Payment Card — show if not yet approved -->
+      <!-- Payment Card — show if not yet approved -->
       <% if (user.membershipStatus !== 'approved') { %>
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div class="gradient-header p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h3 class="text-white font-display font-bold text-xl">One-Time Life Membership Fee</h3>
-            <p class="text-navy-300 text-sm">Pay once, stay connected for life</p>
-          </div>
-          <div class="text-left sm:text-right">
-            <div class="text-gold-400 font-display font-bold text-4xl">₹<%= membershipAmount.toLocaleString('en-IN') %></div>
-            <div class="text-navy-300 text-xs">One-time payment only</div>
-          </div>
-        </div>
-        <div class="p-5 sm:p-6">
-          <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <i class="fa-solid fa-shield-halved text-blue-600 text-lg flex-shrink-0"></i>
-            <div>
-              <p class="text-blue-800 font-semibold text-sm">Secure Payment via Razorpay</p>
-              <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card, Wallets accepted</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <% [
-              { label: 'UPI', icon: 'fa-mobile-screen-button' },
-              { label: 'Card', icon: 'fa-credit-card' },
-              { label: 'Net Banking', icon: 'fa-building-columns' },
-              { label: 'Wallet', icon: 'fa-wallet' }
-            ].forEach(m => { %>
-            <div class="border border-gray-100 rounded-xl p-2.5 text-center text-xs font-semibold text-gray-600 bg-gray-50">
-              <i class="fa-solid <%= m.icon %> text-lg text-navy-600 block mb-1"></i>
-              <%= m.label %>
-            </div>
+        <h3 class="font-bold text-navy-800 text-xl mb-4">Select Membership Plan</h3>
+        <% if (plans && plans.length > 0) { %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <% plans.forEach(plan => { %>
+              <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col hover:border-gold-400 transition cursor-pointer" onclick="selectPlan('<%= plan._id %>', <%= plan.amount %>, '<%= plan.title %>')">
+                <div class="p-5 flex-1 <%= plan.isFeatured ? 'bg-amber-50' : '' %>">
+                  <% if (plan.isFeatured) { %><span class="text-xs badge-life px-2 py-1 rounded-full font-bold mb-3 inline-block">Popular Choice</span><% } %>
+                  <h4 class="font-display font-bold text-xl text-navy-800 mb-2"><%= plan.title %></h4>
+                  <div class="text-gold-500 font-display font-bold text-3xl mb-3">₹<%= plan.amount.toLocaleString('en-IN') %></div>
+                  <p class="text-gray-500 text-sm mb-4"><%= plan.description %></p>
+                  <% if (plan.benefits && plan.benefits.length > 0) { %>
+                    <ul class="space-y-1.5 text-xs text-gray-600">
+                      <% plan.benefits.forEach(b => { %>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-emerald-500 mt-0.5"></i><%=b%></li>
+                      <% }) %>
+                    </ul>
+                  <% } %>
+                </div>
+                <div class="p-5 pt-0 mt-auto">
+                  <button type="button" id="btn-<%= plan._id %>" class="plan-select-btn w-full text-center text-sm font-semibold text-navy-600 py-2.5 rounded-xl bg-navy-50 hover:bg-navy-100 transition border border-navy-100">
+                    Select Plan
+                  </button>
+                </div>
+              </div>
             <% }) %>
           </div>
 
-          <button id="pay-btn"
-            class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-base flex items-center justify-center gap-3">
-            <i class="fa-solid fa-lock"></i>
-            <span id="pay-btn-text">Pay ₹<%= membershipAmount.toLocaleString('en-IN') %> — Apply for Life Membership</span>
-          </button>
-          <p class="text-center text-gray-400 text-xs mt-3">
-            <i class="fa-solid fa-info-circle mr-1"></i>
-            After payment, your membership will be reviewed and approved by admin within 1–2 business days.
-          </p>
-        </div>
-      </div>
+          <div id="payment-section" class="hidden bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div class="gradient-header p-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-white font-display font-bold text-lg" id="selected-plan-title">Plan Name</h3>
+              </div>
+              <div class="text-right">
+                <div class="text-gold-400 font-display font-bold text-2xl" id="selected-plan-amount">₹0</div>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <i class="fa-solid fa-shield-halved text-blue-600 text-lg flex-shrink-0"></i>
+                <div>
+                  <p class="text-blue-800 font-semibold text-sm">Secure Payment via Razorpay</p>
+                  <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card, Wallets accepted</p>
+                </div>
+              </div>
+              <button id="pay-btn"
+                class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-base flex items-center justify-center gap-3">
+                <i class="fa-solid fa-lock"></i>
+                <span id="pay-btn-text">Pay & Apply</span>
+              </button>
+              <p class="text-center text-gray-400 text-xs mt-3">
+                <i class="fa-solid fa-info-circle mr-1"></i>
+                After payment, your membership will be reviewed and approved by admin.
+              </p>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center text-gray-500">
+            <i class="fa-solid fa-tags text-3xl mb-3 text-gray-300"></i>
+            <p>No membership plans are currently available. Please check back later.</p>
+          </div>
+        <% } %>
       <% } %>
 
       <!-- Payment Receipt (if paid) -->
@@ -187,12 +204,50 @@
 </div>
 
 <script>
-const MEMBERSHIP_AMOUNT = <%= membershipAmount %>;
 const USER_NAME = '<%= user.name.replace(/'/g, "\\'") %>';
 const USER_EMAIL = '<%= user.email %>';
 const USER_PHONE = '<%= user.phone || "" %>';
 
+let selectedPlanId = null;
+let selectedPlanAmount = 0;
+let selectedPlanTitle = '';
+
+function selectPlan(id, amount, title) {
+  selectedPlanId = id;
+  selectedPlanAmount = amount;
+  selectedPlanTitle = title;
+
+  // Highlight selected card visually
+  document.querySelectorAll('.plan-select-btn').forEach(btn => {
+    btn.textContent = 'Select Plan';
+    btn.classList.remove('bg-navy-600', 'text-white');
+    btn.classList.add('bg-navy-50', 'text-navy-600');
+  });
+  const selectedBtn = document.getElementById('btn-' + id);
+  if (selectedBtn) {
+    selectedBtn.textContent = 'Selected ✓';
+    selectedBtn.classList.remove('bg-navy-50', 'text-navy-600');
+    selectedBtn.classList.add('bg-navy-600', 'text-white');
+  }
+
+  // Update payment section details
+  document.getElementById('selected-plan-title').textContent = title;
+  document.getElementById('selected-plan-amount').textContent = '₹' + amount.toLocaleString('en-IN');
+  document.getElementById('pay-btn-text').textContent = 'Pay ₹' + amount.toLocaleString('en-IN') + ' & Apply';
+  
+  // Show payment section
+  document.getElementById('payment-section').classList.remove('hidden');
+  
+  // Scroll to payment section smoothly
+  document.getElementById('payment-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 async function initiatePayment() {
+  if (!selectedPlanId) {
+    alert('Please select a membership plan first.');
+    return;
+  }
+
   const btn = document.getElementById('pay-btn');
   const btnText = document.getElementById('pay-btn-text');
   btn.disabled = true;
@@ -201,14 +256,15 @@ async function initiatePayment() {
 
   const reset = () => {
     btn.disabled = false;
-    btnText.textContent = `Pay ₹${MEMBERSHIP_AMOUNT.toLocaleString('en-IN')} — Apply for Life Membership`;
+    btnText.textContent = `Pay ₹${selectedPlanAmount.toLocaleString('en-IN')} & Apply`;
     btn.querySelector('i').className = 'fa-solid fa-lock';
   };
 
   try {
     const res = await fetch('/alumni/membership/apply', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId: selectedPlanId })
     });
     const data = await res.json();
 
@@ -243,13 +299,12 @@ async function initiatePayment() {
       return;
     }
 
-    // Real Razorpay
     const options = {
       key: data.key,
       amount: data.amount,
       currency: data.currency || 'INR',
       name: 'SVPM Alumni Association',
-      description: 'Life Membership Fee',
+      description: selectedPlanTitle + ' Membership',
       order_id: data.orderId,
       handler: async function(response) {
         btnText.textContent = 'Verifying payment...';
@@ -283,24 +338,25 @@ async function initiatePayment() {
       }
     };
 
-    const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function(response) {
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response) {
       alert('Payment failed: ' + response.error.description);
       reset();
     });
     rzp.open();
+
   } catch (err) {
-    alert('Error: ' + err.message);
+    alert('Request failed: ' + err.message);
     reset();
   }
 }
 
-// Show success message if redirected after payment
+// Show success toast if present in URL
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('success')) {
+if (urlParams.get('success') === '1') {
   const toast = document.createElement('div');
-  toast.className = 'fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold flex items-center gap-2';
-  toast.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Payment successful! Your membership is under review.</span>';
+  toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 transform transition-all duration-500 translate-y-0 opacity-100';
+  toast.innerHTML = '<i class="fa-solid fa-circle-check text-xl"></i><div><h4 class="font-bold">Payment Successful!</h4><p class="text-sm opacity-90">Your membership request is now pending admin approval.</p></div>';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 5000);
 }
