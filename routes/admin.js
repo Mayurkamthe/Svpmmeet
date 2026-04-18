@@ -24,5 +24,8 @@ router.delete('/events/:id',      ctrl.deleteEvent);
 router.get('/announcements',      ctrl.getAnnouncements);
 router.post('/announcements',     ctrl.createAnnouncement);
 router.delete('/announcements/:id', ctrl.deleteAnnouncement);
+router.get('/membership-plans',   ctrl.getMembershipPlans);
+router.post('/membership-plans',  ctrl.createMembershipPlan);
+router.delete('/membership-plans/:id', ctrl.deleteMembershipPlan);
 
 module.exports = router;
