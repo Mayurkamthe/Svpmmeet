@@ -380,7 +380,9 @@ exports.getCertificate = async (req, res) => {
 // GET /alumni/payments
 exports.getPayments = async (req, res) => {
   try {
-    const payments = await Payment.find({ user: req.user._id }).sort('-createdAt');
+    const payments = await Payment.find({ user: req.user._id })
+      .populate('planId', 'title')
+      .sort('-createdAt');
     res.render('alumni/payments', { title: 'Payment History', payments });
   } catch (err) {
     req.flash('error_msg', 'Error loading payments');

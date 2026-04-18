@@ -31,16 +31,12 @@
       </div>
       <div class="flex items-center gap-3">
         <% if (user.membershipStatus === 'approved') { %>
-        <span class="badge-life text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5">
-          <i class="fa-solid fa-star text-xs"></i> Life Member
-        </span>
-        <% } else if (user.membershipStatus === 'pending') { %>
-        <span class="bg-amber-100 text-amber-700 border border-amber-200 text-xs px-3 py-1.5 rounded-full font-semibold">
-          <i class="fa-solid fa-clock mr-1"></i> Membership Pending
-        </span>
+        <a href="/alumni/membership" class="badge-life text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5 hover:opacity-90 transition">
+          <i class="fa-solid fa-star text-xs"></i> Member (<%= payments.filter(p => p.purpose === 'life_membership').length %>)
+        </a>
         <% } else { %>
         <a href="/alumni/membership" class="bg-gold-500 hover:bg-gold-600 text-navy-900 text-xs font-bold px-3 py-1.5 rounded-full transition">
-          <i class="fa-solid fa-star mr-1"></i> Apply for Life Membership
+          <i class="fa-solid fa-star mr-1"></i> Get Membership
         </a>
         <% } %>
         <% if (!user.isVerified) { %>
@@ -87,13 +83,13 @@
             <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
               <i class="fa-solid fa-id-card text-purple-600"></i>
             </div>
-            <span class="text-xs text-gray-400 font-semibold">Membership</span>
+            <span class="text-xs text-gray-400 font-semibold">Memberships</span>
           </div>
-          <div class="font-bold text-base capitalize
-            <%= user.membershipStatus === 'approved' ? 'text-emerald-600' : user.membershipStatus === 'pending' ? 'text-amber-600' : 'text-gray-500' %>">
-            <%= user.membershipStatus === 'none' ? 'Not Applied' : user.membershipStatus %>
+          <% const memCount = payments.filter(p => p.purpose === 'life_membership').length; %>
+          <div class="font-bold text-xl <%= memCount > 0 ? 'text-emerald-600' : 'text-gray-400' %>">
+            <%= memCount > 0 ? memCount : 'None' %>
           </div>
-          <div class="text-gray-400 text-xs mt-1">Life Membership</div>
+          <div class="text-gray-400 text-xs mt-1"><%= memCount > 0 ? 'Active plan' + (memCount > 1 ? 's' : '') : 'No plans yet' %></div>
         </div>
 
         <div class="bg-white rounded-2xl p-5 border border-gray-100 card-hover">
@@ -128,7 +124,7 @@
               <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
                 <i class="fa-solid fa-id-card text-emerald-600 text-xs"></i>
               </div>
-              <span>Life Membership</span>
+              <span>Memberships</span>
               <i class="fa-solid fa-chevron-right ml-auto text-gray-300 text-xs"></i>
             </a>
             <a href="/alumni/directory" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700">
