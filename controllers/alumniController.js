@@ -139,26 +139,21 @@ exports.applyMembership = async (req, res) => {
     }
 
     const amount = plan.amount * 100;
-    let order;
-
-    const rzpConfigured = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET &&
-      process.env.RAZORPAY_KEY_ID !== 'your_key_here';
-
-    if (rzpConfigured) {
-      const razorpay = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET
-      });
-      order = await razorpay.orders.create({
-        amount,
-        currency: 'INR',
-        receipt: `mem_${user._id.toString().substring(18)}_${Date.now()}`,
-        notes: { userId: user._id.toString(), purpose: 'life_membership' }
-      });
-    } else {
-      // Demo mode
-      order = { id: `order_demo_${Date.now()}`, amount, currency: 'INR' };
+    if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'your_key_here') {
+      return res.status(500).json({ success: false, message: 'Razorpay keys are not configured properly.' });
     }
+
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+    
+    let order = await razorpay.orders.create({
+      amount,
+      currency: 'INR',
+      receipt: `mem_${user._id.toString().substring(18)}_${Date.now()}`,
+      notes: { userId: user._id.toString(), purpose: 'life_membership' }
+    });
 
     const payment = await Payment.create({
       user: user._id,
@@ -186,8 +181,7 @@ exports.applyMembership = async (req, res) => {
       amount: order.amount,
       currency: order.currency,
       paymentId: payment._id,
-      key: process.env.RAZORPAY_KEY_ID || '',
-      demo: !rzpConfigured
+      key: process.env.RAZORPAY_KEY_ID
     });
   } catch (err) {
     console.error('Membership apply error:', err);
@@ -201,27 +195,23 @@ exports.verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, payment_id } = req.body;
 
-    const rzpConfigured = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET &&
-      process.env.RAZORPAY_KEY_ID !== 'your_key_here';
-
-    let isValid = false;
-    if (rzpConfigured && razorpay_signature) {
-      const body = razorpay_order_id + '|' + razorpay_payment_id;
-      const expectedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-        .update(body).digest('hex');
-      isValid = expectedSignature === razorpay_signature;
-    } else {
-      isValid = true; // demo mode
+    if (!razorpay_signature) {
+      return res.json({ success: false, message: 'Payment signature missing' });
     }
 
+    const body = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body).digest('hex');
+    const isValid = expectedSignature === razorpay_signature;
+
     if (!isValid) {
-      return res.json({ success: false, message: 'Payment verification failed. Please contact admin.' });
+      return res.json({ success: false, message: 'Payment verification failed. Invalid signature.' });
     }
 
     const payment = await Payment.findByIdAndUpdate(payment_id, {
-      razorpayPaymentId: razorpay_payment_id || `demo_${Date.now()}`,
-      razorpaySignature: razorpay_signature || 'demo',
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
       status: 'paid',
       paidAt: new Date()
     }, { new: true });
