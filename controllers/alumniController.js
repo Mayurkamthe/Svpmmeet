@@ -141,7 +141,7 @@ exports.applyMembership = async (req, res) => {
       order = await razorpay.orders.create({
         amount,
         currency: 'INR',
-        receipt: `membership_${user._id}_${Date.now()}`,
+        receipt: `mem_${user._id.toString().substring(18)}_${Date.now()}`,
         notes: { userId: user._id.toString(), purpose: 'life_membership' }
       });
     } else {
