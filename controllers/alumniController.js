@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Payment = require('../models/Payment');
 const { Event, EventRegistration } = require('../models/Event');
 const Announcement = require('../models/Announcement');
+const MembershipPlan = require('../models/MembershipPlan');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const { sendEmail, emailTemplates } = require('../config/email');
@@ -102,10 +103,10 @@ exports.postEditProfile = async (req, res) => {
 // GET /alumni/membership
 exports.getMembership = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).populate('membershipPlanId');
     const payment = await Payment.findOne({ user: req.user._id, purpose: 'life_membership', status: 'paid' });
-    const membershipAmount = parseInt(process.env.MEMBERSHIP_AMOUNT) || 1000;
-    res.render('alumni/membership', { title: 'Life Membership', user, payment, membershipAmount });
+    const plans = await MembershipPlan.find({ isActive: true }).sort('amount');
+    res.render('alumni/membership', { title: 'Life Membership', user, payment, plans });
   } catch (err) {
     req.flash('error_msg', 'Error loading membership page');
     res.redirect('/alumni/dashboard');
@@ -127,7 +128,17 @@ exports.applyMembership = async (req, res) => {
       { status: 'failed' }
     );
 
-    const amount = parseInt(process.env.MEMBERSHIP_AMOUNT || 1000) * 100;
+    // Fetch the selected plan
+    const { planId } = req.body;
+    if (!planId) {
+      return res.json({ success: false, message: 'Please select a membership plan' });
+    }
+    const plan = await MembershipPlan.findById(planId);
+    if (!plan || !plan.isActive) {
+      return res.json({ success: false, message: 'Invalid or inactive membership plan' });
+    }
+
+    const amount = plan.amount * 100;
     let order;
 
     const rzpConfigured = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET &&
@@ -162,6 +173,10 @@ exports.applyMembership = async (req, res) => {
     if (user.membershipStatus !== 'pending') {
       user.membershipStatus = 'pending';
       user.membershipAppliedAt = new Date();
+      user.membershipPlanId = plan._id;
+      await user.save({ validateBeforeSave: false });
+    } else if (!user.membershipPlanId || user.membershipPlanId.toString() !== plan._id.toString()) {
+      user.membershipPlanId = plan._id;
       await user.save({ validateBeforeSave: false });
     }
 
