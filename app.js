@@ -34,6 +34,7 @@ app.use(helmet({
         "https://www.googleapis.com",
         "https://apis.google.com",
         "https://checkout.razorpay.com",
+        "https://cdn.razorpay.com",
         "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'",
         "https://cdn.tailwindcss.com",
@@ -44,8 +45,10 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       scriptSrcAttr: ["'unsafe-inline'"],
       connectSrc: ["'self'", "https://identitytoolkit.googleapis.com",
-        "https://www.googleapis.com", "https://securetoken.googleapis.com"],
-      frameSrc: ["'self'", "https://www.google.com", "https://accounts.google.com"]
+        "https://www.googleapis.com", "https://securetoken.googleapis.com",
+        "https://lumberjack.razorpay.com", "https://api.razorpay.com"],
+      frameSrc: ["'self'", "https://www.google.com", "https://accounts.google.com",
+        "https://api.razorpay.com", "https://checkout.razorpay.com"]
     }
   }
 }));
