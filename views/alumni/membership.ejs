@@ -273,32 +273,6 @@ async function initiatePayment() {
       return reset();
     }
 
-    // Demo mode — no Razorpay configured
-    if (data.demo || !data.key) {
-      if (confirm('Demo Mode: Razorpay is not configured. Click OK to simulate a successful payment (for testing only).')) {
-        const verifyRes = await fetch('/alumni/membership/verify-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            razorpay_order_id: data.orderId,
-            razorpay_payment_id: 'demo_pay_' + Date.now(),
-            razorpay_signature: 'demo',
-            payment_id: data.paymentId
-          })
-        });
-        const vData = await verifyRes.json();
-        if (vData.success) {
-          window.location.href = '/alumni/membership?success=1';
-        } else {
-          alert('Demo payment failed: ' + vData.message);
-          reset();
-        }
-      } else {
-        reset();
-      }
-      return;
-    }
-
     const options = {
       key: data.key,
       amount: data.amount,
