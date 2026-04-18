@@ -14,6 +14,8 @@
     .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
     .sidebar-link:hover{background:rgba(255,255,255,0.1);}
     .badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}
+    .plan-card{transition:border-color .15s,box-shadow .15s;}
+    .plan-card.selected{border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,.15);}
   </style>
 </head>
 <body class="bg-gray-50">
@@ -23,8 +25,8 @@
 
   <main class="flex-1 overflow-y-auto pt-14 md:pt-0 min-w-0">
     <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
-      <h1 class="text-xl font-bold" style="color:#1e3a5f">Life Membership</h1>
-      <p class="text-gray-500 text-sm">Become a lifetime member of SVPM Alumni Association</p>
+      <h1 class="text-xl font-bold" style="color:#1e3a5f">Memberships</h1>
+      <p class="text-gray-500 text-sm">Purchase and manage your SVPM Alumni Association memberships</p>
     </div>
 
     <div class="p-4 sm:p-6 max-w-3xl">
@@ -41,50 +43,22 @@
       </div>
       <% } %>
 
-      <!-- Status Banner -->
-      <% if (user.membershipStatus === 'approved') { %>
+      <!-- Active Memberships Banner — shown if user has any paid membership -->
+      <% if (payments && payments.length > 0) { %>
       <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-5 sm:p-6 mb-6 text-white">
         <div class="flex items-center gap-4 flex-wrap">
           <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
             <i class="fa-solid fa-certificate text-3xl"></i>
           </div>
           <div class="flex-1">
-            <h2 class="font-display text-xl sm:text-2xl font-bold">🎉 Life Member</h2>
-            <p class="text-emerald-100 text-sm">You are a verified Life Member of SVPM Alumni Association</p>
+            <h2 class="font-display text-xl sm:text-2xl font-bold">🎉 Active Member</h2>
+            <p class="text-emerald-100 text-sm">
+              You hold <strong><%= payments.length %></strong> membership<%= payments.length > 1 ? 's' : '' %> with SVPM Alumni Association
+            </p>
           </div>
           <a href="/alumni/certificate" class="bg-white text-emerald-700 font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition flex items-center gap-2 flex-shrink-0">
             <i class="fa-solid fa-download"></i> Certificate
           </a>
-        </div>
-      </div>
-
-      <% } else if (user.membershipStatus === 'pending') { %>
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
-        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-          <i class="fa-solid fa-hourglass-half text-amber-600 text-xl"></i>
-        </div>
-        <div>
-          <h3 class="font-bold text-amber-800">Application Under Review</h3>
-          <p class="text-amber-700 text-sm mt-1">
-            <% if (payment) { %>
-              Your payment of ₹<%= payment.amount.toLocaleString('en-IN') %> was received on <%= new Date(payment.paidAt).toLocaleDateString('en-IN') %>.
-              Awaiting admin approval — usually within 1–2 business days.
-            <% } else { %>
-              Your application is pending. If you haven't completed payment yet, please click "Pay Now" below.
-            <% } %>
-          </p>
-        </div>
-      </div>
-
-      <% } else if (user.membershipStatus === 'rejected') { %>
-      <div class="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
-        <div class="flex items-start gap-3">
-          <i class="fa-solid fa-circle-exclamation text-red-600 text-xl mt-0.5"></i>
-          <div>
-            <p class="font-bold text-red-800">Membership Application Not Approved</p>
-            <p class="text-red-700 text-sm mt-1">Reason: <%= user.membershipRejectionReason || 'Please contact admin for details.' %></p>
-            <p class="text-red-600 text-xs mt-2">You may re-apply below after addressing the issue.</p>
-          </div>
         </div>
       </div>
       <% } %>
@@ -92,14 +66,14 @@
       <!-- Benefits Section -->
       <div class="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 mb-6">
         <h3 class="font-bold text-navy-800 text-lg mb-5 flex items-center gap-2">
-          <i class="fa-solid fa-star text-yellow-500"></i> Life Membership Benefits
+          <i class="fa-solid fa-star text-yellow-500"></i> Membership Benefits
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <% [
             { icon: 'fa-certificate', text: 'Official Membership Certificate (PDF)' },
             { icon: 'fa-address-book', text: 'Full access to Alumni Directory' },
             { icon: 'fa-calendar-days', text: 'Priority registration for events' },
-            { icon: 'fa-id-card', text: 'Unique Life Member Badge on profile' },
+            { icon: 'fa-id-card', text: 'Unique Member Badge on profile' },
             { icon: 'fa-receipt', text: 'Digital payment receipts' },
             { icon: 'fa-bell', text: 'Exclusive announcements & updates' }
           ].forEach(b => { %>
@@ -113,89 +87,113 @@
         </div>
       </div>
 
-      <!-- Payment Card — show if not yet approved -->
-      <!-- Payment Card — show if not yet approved -->
-      <% if (user.membershipStatus !== 'approved') { %>
-        <h3 class="font-bold text-navy-800 text-xl mb-4">Select Membership Plan</h3>
-        <% if (plans && plans.length > 0) { %>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <% plans.forEach(plan => { %>
-              <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col hover:border-gold-400 transition cursor-pointer" onclick="selectPlan('<%= plan._id %>', <%= plan.amount %>, '<%= plan.title %>')">
-                <div class="p-5 flex-1 <%= plan.isFeatured ? 'bg-amber-50' : '' %>">
-                  <% if (plan.isFeatured) { %><span class="text-xs badge-life px-2 py-1 rounded-full font-bold mb-3 inline-block">Popular Choice</span><% } %>
-                  <h4 class="font-display font-bold text-xl text-navy-800 mb-2"><%= plan.title %></h4>
-                  <div class="text-gold-500 font-display font-bold text-3xl mb-3">₹<%= plan.amount.toLocaleString('en-IN') %></div>
-                  <p class="text-gray-500 text-sm mb-4"><%= plan.description %></p>
-                  <% if (plan.benefits && plan.benefits.length > 0) { %>
-                    <ul class="space-y-1.5 text-xs text-gray-600">
-                      <% plan.benefits.forEach(b => { %>
-                        <li class="flex items-start gap-2"><i class="fa-solid fa-check text-emerald-500 mt-0.5"></i><%=b%></li>
-                      <% }) %>
-                    </ul>
-                  <% } %>
-                </div>
-                <div class="p-5 pt-0 mt-auto">
-                  <button type="button" id="btn-<%= plan._id %>" class="plan-select-btn w-full text-center text-sm font-semibold text-navy-600 py-2.5 rounded-xl bg-navy-50 hover:bg-navy-100 transition border border-navy-100">
-                    Select Plan
-                  </button>
-                </div>
-              </div>
-            <% }) %>
-          </div>
+      <!-- Plan Selector — always shown so users can buy additional plans -->
+      <% if (plans && plans.length > 0) { %>
+      <div class="mb-6">
+        <h3 class="font-bold text-navy-800 text-xl mb-1">
+          <%= (payments && payments.length > 0) ? 'Buy Another Membership Plan' : 'Select a Membership Plan' %>
+        </h3>
+        <p class="text-gray-400 text-sm mb-4">Each plan purchase is independent — you can hold multiple memberships.</p>
 
-          <div id="payment-section" class="hidden bg-white rounded-2xl border border-gray-100 overflow-hidden">
-            <div class="gradient-header p-5 flex items-center justify-between gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <% plans.forEach(plan => { %>
+            <div class="plan-card bg-white rounded-2xl border-2 border-gray-200 overflow-hidden flex flex-col cursor-pointer"
+                 id="card-<%= plan._id %>"
+                 onclick="selectPlan('<%= plan._id %>', <%= plan.amount %>, '<%= plan.title %>')">
+              <div class="p-5 flex-1 <%= plan.isFeatured ? 'bg-amber-50' : '' %>">
+                <% if (plan.isFeatured) { %><span class="text-xs badge-life px-2 py-1 rounded-full font-bold mb-3 inline-block">Popular Choice</span><% } %>
+                <h4 class="font-display font-bold text-xl text-navy-800 mb-2"><%= plan.title %></h4>
+                <div class="text-gold-500 font-display font-bold text-3xl mb-3">₹<%= plan.amount.toLocaleString('en-IN') %></div>
+                <p class="text-gray-500 text-sm mb-4"><%= plan.description %></p>
+                <% if (plan.benefits && plan.benefits.length > 0) { %>
+                  <ul class="space-y-1.5 text-xs text-gray-600">
+                    <% plan.benefits.forEach(b => { %>
+                      <li class="flex items-start gap-2"><i class="fa-solid fa-check text-emerald-500 mt-0.5"></i><%=b%></li>
+                    <% }) %>
+                  </ul>
+                <% } %>
+              </div>
+              <div class="p-5 pt-0 mt-auto">
+                <button type="button" id="btn-<%= plan._id %>"
+                  class="plan-select-btn w-full text-center text-sm font-semibold text-navy-600 py-2.5 rounded-xl bg-navy-50 hover:bg-navy-100 transition border border-navy-100">
+                  Select Plan
+                </button>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- Payment section (revealed after plan selection) -->
+        <div id="payment-section" class="hidden bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div class="gradient-header p-5 flex items-center justify-between gap-4">
+            <h3 class="text-white font-display font-bold text-lg" id="selected-plan-title">Plan Name</h3>
+            <div class="text-gold-400 font-display font-bold text-2xl" id="selected-plan-amount">₹0</div>
+          </div>
+          <div class="p-5">
+            <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <i class="fa-solid fa-shield-halved text-blue-600 text-lg flex-shrink-0"></i>
               <div>
-                <h3 class="text-white font-display font-bold text-lg" id="selected-plan-title">Plan Name</h3>
-              </div>
-              <div class="text-right">
-                <div class="text-gold-400 font-display font-bold text-2xl" id="selected-plan-amount">₹0</div>
+                <p class="text-blue-800 font-semibold text-sm">Secure Payment via Razorpay</p>
+                <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card, Wallets accepted</p>
               </div>
             </div>
-            <div class="p-5">
-              <div class="flex items-center gap-3 mb-5 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                <i class="fa-solid fa-shield-halved text-blue-600 text-lg flex-shrink-0"></i>
-                <div>
-                  <p class="text-blue-800 font-semibold text-sm">Secure Payment via Razorpay</p>
-                  <p class="text-blue-600 text-xs">UPI, Net Banking, Credit/Debit Card, Wallets accepted</p>
-                </div>
-              </div>
-              <button id="pay-btn"
-                class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-base flex items-center justify-center gap-3">
-                <i class="fa-solid fa-lock"></i>
-                <span id="pay-btn-text">Pay & Apply</span>
-              </button>
-              <p class="text-center text-gray-400 text-xs mt-3">
-                <i class="fa-solid fa-info-circle mr-1"></i>
-                After successful payment, your membership will be automatically activated.
-              </p>
-            </div>
+            <button id="pay-btn"
+              class="w-full gradient-header text-white font-bold py-4 rounded-xl hover:opacity-90 transition text-base flex items-center justify-center gap-3">
+              <i class="fa-solid fa-lock"></i>
+              <span id="pay-btn-text">Pay & Buy Membership</span>
+            </button>
+            <p class="text-center text-gray-400 text-xs mt-3">
+              <i class="fa-solid fa-info-circle mr-1"></i>
+              Membership is activated instantly after successful payment.
+            </p>
           </div>
-        <% } else { %>
-          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center text-gray-500">
-            <i class="fa-solid fa-tags text-3xl mb-3 text-gray-300"></i>
-            <p>No membership plans are currently available. Please check back later.</p>
-          </div>
-        <% } %>
+        </div>
+      </div>
+      <% } else { %>
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center text-gray-500 mb-6">
+        <i class="fa-solid fa-tags text-3xl mb-3 text-gray-300"></i>
+        <p>No membership plans are currently available. Please check back later.</p>
+      </div>
       <% } %>
 
-      <!-- Payment Receipt (if paid) -->
-      <% if (payment) { %>
-      <div class="mt-6 bg-white rounded-2xl border border-gray-100 p-5">
+      <!-- Membership Purchase History -->
+      <% if (payments && payments.length > 0) { %>
+      <div class="bg-white rounded-2xl border border-gray-100 p-5">
         <h4 class="font-bold text-navy-800 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-receipt text-navy-600"></i> Payment Receipt
+          <i class="fa-solid fa-receipt text-navy-600"></i> Membership Purchase History
+          <span class="ml-auto text-xs font-normal text-gray-400"><%= payments.length %> purchase<%= payments.length > 1 ? 's' : '' %></span>
         </h4>
-        <div class="grid grid-cols-2 gap-3 text-sm mb-4">
-          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Receipt No.</span><br><span class="font-mono font-semibold text-gray-800"><%= payment.receiptNumber %></span></div>
-          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Amount</span><br><span class="font-bold text-emerald-600 text-lg">₹<%= payment.amount.toLocaleString('en-IN') %></span></div>
-          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Date</span><br><span class="text-gray-800"><%= payment.paidAt ? new Date(payment.paidAt).toLocaleDateString('en-IN', {year:'numeric',month:'long',day:'numeric'}) : '-' %></span></div>
-          <div><span class="text-gray-500 text-xs uppercase tracking-wide">Status</span><br><span class="font-semibold text-emerald-600 capitalize"><%= payment.status %></span></div>
+        <div class="space-y-3">
+          <% payments.forEach((pmt, idx) => { %>
+          <div class="border border-gray-100 rounded-xl p-4 <%= idx === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50' %>">
+            <div class="flex items-start justify-between gap-3 flex-wrap">
+              <div>
+                <p class="font-semibold text-gray-800 text-sm">
+                  <%= pmt.planTitle || (pmt.planId && pmt.planId.title) || 'Membership' %>
+                  <% if (idx === 0) { %><span class="ml-2 text-xs badge-life px-2 py-0.5 rounded-full">Latest</span><% } %>
+                </p>
+                <p class="text-gray-400 text-xs font-mono mt-0.5"><%= pmt.receiptNumber %></p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="font-bold text-emerald-600 text-lg">₹<%= pmt.amount.toLocaleString('en-IN') %></p>
+                <p class="text-gray-400 text-xs">
+                  <%= pmt.paidAt ? new Date(pmt.paidAt).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) : '-' %>
+                </p>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-semibold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">
+                <i class="fa-solid fa-circle-check mr-1"></i>Paid
+              </span>
+              <a href="/payments/receipt/<%= pmt._id %>"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition"
+                style="background:#1e3a5f;color:white;">
+                <i class="fa-solid fa-download"></i> Receipt PDF
+              </a>
+            </div>
+          </div>
+          <% }) %>
         </div>
-        <a href="/payments/receipt/<%= payment._id %>"
-          class="inline-flex items-center gap-2 font-semibold text-sm px-4 py-2 rounded-xl transition"
-          style="background:#1e3a5f;color:white;">
-          <i class="fa-solid fa-download"></i> Download Receipt PDF
-        </a>
       </div>
       <% } %>
 
@@ -217,12 +215,16 @@ function selectPlan(id, amount, title) {
   selectedPlanAmount = amount;
   selectedPlanTitle = title;
 
-  // Highlight selected card visually
+  // Reset all cards
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.plan-select-btn').forEach(btn => {
     btn.textContent = 'Select Plan';
     btn.classList.remove('bg-navy-600', 'text-white');
     btn.classList.add('bg-navy-50', 'text-navy-600');
   });
+
+  // Highlight selected
+  document.getElementById('card-' + id)?.classList.add('selected');
   const selectedBtn = document.getElementById('btn-' + id);
   if (selectedBtn) {
     selectedBtn.textContent = 'Selected ✓';
@@ -230,16 +232,13 @@ function selectPlan(id, amount, title) {
     selectedBtn.classList.add('bg-navy-600', 'text-white');
   }
 
-  // Update payment section details
   document.getElementById('selected-plan-title').textContent = title;
   document.getElementById('selected-plan-amount').textContent = '₹' + amount.toLocaleString('en-IN');
-  document.getElementById('pay-btn-text').textContent = 'Pay ₹' + amount.toLocaleString('en-IN') + ' & Apply';
-  
-  // Show payment section
-  document.getElementById('payment-section').classList.remove('hidden');
-  
-  // Scroll to payment section smoothly
-  document.getElementById('payment-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('pay-btn-text').textContent = 'Pay ₹' + amount.toLocaleString('en-IN') + ' & Buy Membership';
+
+  const section = document.getElementById('payment-section');
+  section.classList.remove('hidden');
+  section.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function initiatePayment() {
@@ -256,7 +255,7 @@ async function initiatePayment() {
 
   const reset = () => {
     btn.disabled = false;
-    btnText.textContent = `Pay ₹${selectedPlanAmount.toLocaleString('en-IN')} & Apply`;
+    btnText.textContent = `Pay ₹${selectedPlanAmount.toLocaleString('en-IN')} & Buy Membership`;
     btn.querySelector('i').className = 'fa-solid fa-lock';
   };
 
@@ -295,7 +294,7 @@ async function initiatePayment() {
           });
           const vData = await verifyRes.json();
           if (vData.success) {
-            showToast();
+            showToast(selectedPlanTitle);
             setTimeout(() => {
               window.location.href = '/alumni/membership?success=1';
             }, 2500);
@@ -310,9 +309,7 @@ async function initiatePayment() {
       },
       prefill: { name: USER_NAME, email: USER_EMAIL, contact: USER_PHONE },
       theme: { color: '#1e3a5f' },
-      modal: {
-        ondismiss: () => reset()
-      }
+      modal: { ondismiss: () => reset() }
     };
 
     const rzp = new window.Razorpay(options);
@@ -328,17 +325,20 @@ async function initiatePayment() {
   }
 }
 
-// Show success toast if present in URL
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('success') === '1') {
+function showToast(planName) {
   const toast = document.createElement('div');
-  toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 transform transition-all duration-500 translate-y-0 opacity-100';
-  toast.innerHTML = '<i class="fa-solid fa-circle-check text-xl"></i><div><h4 class="font-bold">Payment Successful! Membership Approved!</h4><p class="text-sm opacity-90">Your life membership has been activated. You can now download your certificate.</p></div>';
+  toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50';
+  toast.innerHTML = `<i class="fa-solid fa-circle-check text-xl"></i><div><h4 class="font-bold">Membership Activated!</h4><p class="text-sm opacity-90">${planName} membership is now active. Receipt sent to your email.</p></div>`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 5000);
 }
 
-// Attach event listener
+// Show success toast from URL param
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success') === '1') {
+  showToast('Your new');
+}
+
 const payBtnElement = document.getElementById('pay-btn');
 if (payBtnElement) {
   payBtnElement.addEventListener('click', initiatePayment);

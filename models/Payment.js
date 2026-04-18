@@ -17,6 +17,13 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     default: 'INR'
   },
+  planId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MembershipPlan'
+  },
+  planTitle: {
+    type: String
+  },
   purpose: {
     type: String,
     enum: ['life_membership', 'event_registration', 'donation'],

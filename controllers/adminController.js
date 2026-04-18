@@ -132,22 +132,13 @@ exports.deleteAlumni = async (req, res) => {
 // GET /admin/memberships
 exports.getMemberships = async (req, res) => {
   try {
-    const { status = 'pending' } = req.query;
-    const query = { role: 'alumni' };
-    if (status !== 'all') query.membershipStatus = status;
+    // Each row = one membership purchase; query payments directly
+    const membershipPayments = await Payment.find({ purpose: 'life_membership', status: 'paid' })
+      .populate('user', 'name email alumniId avatar membershipStatus')
+      .populate('planId', 'title amount')
+      .sort('-paidAt');
 
-    // Also get the paid payment for each user to show payment info
-    const users = await User.find(query).sort('-membershipAppliedAt');
-
-    // Attach payment info to each user
-    const usersWithPayments = await Promise.all(users.map(async (u) => {
-      const payment = await Payment.findOne({
-        user: u._id, purpose: 'life_membership', status: 'paid'
-      }).sort('-paidAt');
-      return { ...u.toObject(), paidPayment: payment };
-    }));
-
-    res.render('admin/memberships', { title: 'Membership Requests', users: usersWithPayments, status });
+    res.render('admin/memberships', { title: 'Membership Purchases', payments: membershipPayments });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error loading memberships');

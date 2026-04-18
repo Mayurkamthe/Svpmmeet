@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'MembershipPlan'
   },
+  membershipPlanIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MembershipPlan'
+  }],
 
   profile: {
     branch: {

@@ -103,10 +103,15 @@ exports.postEditProfile = async (req, res) => {
 // GET /alumni/membership
 exports.getMembership = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('membershipPlanId');
-    const payment = await Payment.findOne({ user: req.user._id, purpose: 'life_membership', status: 'paid' });
+    const user = await User.findById(req.user._id).populate('membershipPlanIds');
+    // All paid membership payments, newest first
+    const payments = await Payment.find({ user: req.user._id, purpose: 'life_membership', status: 'paid' })
+      .populate('planId')
+      .sort('-paidAt');
     const plans = await MembershipPlan.find({ isActive: true }).sort('amount');
-    res.render('alumni/membership', { title: 'Life Membership', user, payment, plans });
+    // Latest paid payment for receipt display
+    const payment = payments[0] || null;
+    res.render('alumni/membership', { title: 'Life Membership', user, payment, payments, plans });
   } catch (err) {
     req.flash('error_msg', 'Error loading membership page');
     res.redirect('/alumni/dashboard');
@@ -118,17 +123,7 @@ exports.applyMembership = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
 
-    if (user.membershipStatus === 'approved') {
-      return res.json({ success: false, message: 'Already a life member' });
-    }
-
-    // Cancel any previously stuck 'created' payment
-    await Payment.updateMany(
-      { user: user._id, purpose: 'life_membership', status: 'created' },
-      { status: 'failed' }
-    );
-
-    // Fetch the selected plan
+    // Cancel any previously stuck 'created' payment for THIS plan only
     const { planId } = req.body;
     if (!planId) {
       return res.json({ success: false, message: 'Please select a membership plan' });
@@ -137,6 +132,12 @@ exports.applyMembership = async (req, res) => {
     if (!plan || !plan.isActive) {
       return res.json({ success: false, message: 'Invalid or inactive membership plan' });
     }
+
+    // Cancel stuck 'created' payments for this same plan
+    await Payment.updateMany(
+      { user: user._id, purpose: 'life_membership', status: 'created', planId: plan._id },
+      { status: 'failed' }
+    );
 
     const amount = plan.amount * 100;
     if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'your_key_here') {
@@ -147,12 +148,12 @@ exports.applyMembership = async (req, res) => {
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET
     });
-    
-    let order = await razorpay.orders.create({
+
+    const order = await razorpay.orders.create({
       amount,
       currency: 'INR',
       receipt: `mem_${user._id.toString().substring(18)}_${Date.now()}`,
-      notes: { userId: user._id.toString(), purpose: 'life_membership' }
+      notes: { userId: user._id.toString(), purpose: 'life_membership', planId: plan._id.toString() }
     });
 
     const payment = await Payment.create({
@@ -161,19 +162,10 @@ exports.applyMembership = async (req, res) => {
       amount: amount / 100,
       currency: 'INR',
       purpose: 'life_membership',
+      planId: plan._id,
+      planTitle: plan.title,
       status: 'created'
     });
-
-    // Only set pending AFTER payment record is created
-    if (user.membershipStatus !== 'pending') {
-      user.membershipStatus = 'pending';
-      user.membershipAppliedAt = new Date();
-      user.membershipPlanId = plan._id;
-      await user.save({ validateBeforeSave: false });
-    } else if (!user.membershipPlanId || user.membershipPlanId.toString() !== plan._id.toString()) {
-      user.membershipPlanId = plan._id;
-      await user.save({ validateBeforeSave: false });
-    }
 
     res.json({
       success: true,
@@ -230,13 +222,18 @@ exports.verifyPayment = async (req, res) => {
     payment.paidAt = paidAt;
     await payment.save();
 
-    // AUTO-APPROVE membership on successful payment
-    const user = await User.findByIdAndUpdate(req.user._id, {
+    // AUTO-APPROVE: add this plan to user's membershipPlanIds, mark approved
+    const planId = payment.planId;
+    const updateOp = {
       membershipStatus: 'approved',
-      membershipAppliedAt: paidAt,
       membershipApprovedAt: paidAt,
+      membershipAppliedAt: paidAt,
       isVerified: true
-    }, { new: true });
+    };
+    if (planId) {
+      updateOp.$addToSet = { membershipPlanIds: planId };
+    }
+    const user = await User.findByIdAndUpdate(req.user._id, updateOp, { new: true });
 
     // Send payment receipt + membership approval emails (non-blocking)
     try {

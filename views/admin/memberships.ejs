@@ -21,25 +21,29 @@
   <%- include('../partials/admin-sidebar') %>
   <main class="flex-1 overflow-y-auto pt-14 md:pt-0 min-w-0">
     <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-10">
-      <h1 class="text-xl font-bold" style="color:#1e3a5f">Membership Requests</h1>
-      <p class="text-gray-500 text-sm">Manage life membership applications — approve after verifying payment</p>
+      <h1 class="text-xl font-bold" style="color:#1e3a5f">Membership Purchases</h1>
+      <p class="text-gray-500 text-sm">All paid membership transactions — one row per purchase</p>
     </div>
     <div class="p-4 sm:p-6">
 
-      <!-- Status Tabs -->
-      <div class="flex gap-2 mb-6 flex-wrap">
-        <% ['pending','approved','rejected','all'].forEach(s => { %>
-        <a href="/admin/memberships?status=<%= s %>"
-          class="px-4 py-2 rounded-xl text-sm font-semibold transition capitalize <%= status === s ? 'text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50' %>"
-          <%= status === s ? 'style="background:#1e3a5f"' : '' %>>
-          <%= s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1) %>
-          <% if (s === 'pending') { %>
-            <span class="ml-1 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
-              <%= users.filter(u => u.membershipStatus === 'pending').length %>
-            </span>
-          <% } %>
-        </a>
-        <% }) %>
+      <!-- Summary stat -->
+      <div class="mb-5 flex items-center gap-3">
+        <div class="bg-white border border-gray-100 rounded-xl px-5 py-3 flex items-center gap-3">
+          <i class="fa-solid fa-receipt text-navy-600"></i>
+          <div>
+            <p class="text-xs text-gray-400 uppercase font-bold">Total Purchases</p>
+            <p class="font-bold text-navy-800 text-lg"><%= payments ? payments.length : 0 %></p>
+          </div>
+        </div>
+        <div class="bg-white border border-gray-100 rounded-xl px-5 py-3 flex items-center gap-3">
+          <i class="fa-solid fa-indian-rupee-sign text-emerald-600"></i>
+          <div>
+            <p class="text-xs text-gray-400 uppercase font-bold">Total Revenue</p>
+            <p class="font-bold text-emerald-700 text-lg">
+              ₹<%= payments ? payments.reduce((s,p) => s + (p.amount||0), 0).toLocaleString('en-IN') : 0 %>
+            </p>
+          </div>
+        </div>
       </div>
 
       <% if (locals.success_msg && success_msg.length > 0) { %>
@@ -56,79 +60,54 @@
               <tr class="bg-gray-50 border-b border-gray-100">
                 <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni</th>
                 <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni ID</th>
-                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Applied On</th>
-                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Payment</th>
-                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Status</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Plan</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Amount</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Date</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Receipt</th>
                 <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-              <% if (users && users.length > 0) { users.forEach(u => { %>
-              <tr class="hover:bg-gray-50" id="mrow-<%= u._id %>">
+              <% if (payments && payments.length > 0) { payments.forEach(pmt => { %>
+              <tr class="hover:bg-gray-50">
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-sm overflow-hidden">
-                      <% if (u.avatar) { %><img src="<%= u.avatar %>" class="w-full h-full object-cover"><% } else { %><%= u.name.charAt(0) %><% } %>
+                      <% if (pmt.user && pmt.user.avatar) { %><img src="<%= pmt.user.avatar %>" class="w-full h-full object-cover"><% } else { %><%= pmt.user ? pmt.user.name.charAt(0) : '?' %><% } %>
                     </div>
                     <div>
-                      <p class="font-semibold text-gray-800"><%= u.name %></p>
-                      <p class="text-gray-400 text-xs"><%= u.email %></p>
+                      <p class="font-semibold text-gray-800"><%= pmt.user ? pmt.user.name : 'Unknown' %></p>
+                      <p class="text-gray-400 text-xs"><%= pmt.user ? pmt.user.email : '' %></p>
                     </div>
                   </div>
                 </td>
-                <td class="px-5 py-4 font-mono text-xs text-gray-500"><%= u.alumniId || 'N/A' %></td>
+                <td class="px-5 py-4 font-mono text-xs text-gray-500"><%= pmt.user ? (pmt.user.alumniId || 'N/A') : 'N/A' %></td>
+                <td class="px-5 py-4">
+                  <span class="text-xs badge-life px-2.5 py-1 rounded-full font-semibold">
+                    <%= pmt.planTitle || (pmt.planId && pmt.planId.title) || 'Membership' %>
+                  </span>
+                </td>
+                <td class="px-5 py-4 font-bold text-emerald-600">₹<%= pmt.amount.toLocaleString('en-IN') %></td>
                 <td class="px-5 py-4 text-gray-500 text-xs">
-                  <%= u.membershipAppliedAt ? new Date(u.membershipAppliedAt).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) : '-' %>
+                  <%= pmt.paidAt ? new Date(pmt.paidAt).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}) : '-' %>
                 </td>
-                <td class="px-5 py-4">
-                  <% if (u.paidPayment) { %>
-                  <div class="text-xs">
-                    <span class="font-bold text-emerald-600">₹<%= u.paidPayment.amount.toLocaleString('en-IN') %></span>
-                    <span class="text-gray-400 ml-1"><%= new Date(u.paidPayment.paidAt).toLocaleDateString('en-IN') %></span>
-                    <br><span class="text-gray-400 font-mono"><%= u.paidPayment.receiptNumber %></span>
-                  </div>
-                  <% } else { %>
-                  <span class="text-xs text-gray-400">
-                    <% if (u.membershipStatus === 'pending') { %>
-                      <i class="fa-solid fa-clock text-amber-500 mr-1"></i>Payment pending
-                    <% } else { %>—<% } %>
-                  </span>
-                  <% } %>
-                </td>
-                <td class="px-5 py-4">
-                  <span class="text-xs font-bold px-2.5 py-1 rounded-full
-                    <%= u.membershipStatus === 'approved' ? 'badge-life' : u.membershipStatus === 'pending' ? 'bg-amber-100 text-amber-700' : u.membershipStatus === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500' %>">
-                    <%= u.membershipStatus === 'approved' ? '★ Life Member' : u.membershipStatus.charAt(0).toUpperCase() + u.membershipStatus.slice(1) %>
-                  </span>
-                </td>
+                <td class="px-5 py-4 font-mono text-xs text-gray-400"><%= pmt.receiptNumber %></td>
                 <td class="px-5 py-4">
                   <div class="flex items-center gap-2">
-                    <% if (u.membershipStatus === 'pending') { %>
-                    <button onclick="approveMem('<%= u._id %>', this)"
-                      class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-3 py-1.5 rounded-lg transition">
-                      <i class="fa-solid fa-check mr-1"></i>Approve
-                    </button>
-                    <button onclick="rejectMem('<%= u._id %>')"
-                      class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-semibold px-3 py-1.5 rounded-lg transition">
-                      <i class="fa-solid fa-xmark mr-1"></i>Reject
-                    </button>
-                    <% } %>
-                    <a href="mailto:<%= u.email %>" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1.5 rounded-lg hover:bg-blue-100" title="Email">
+                    <a href="mailto:<%= pmt.user ? pmt.user.email : '' %>" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1.5 rounded-lg hover:bg-blue-100" title="Email">
                       <i class="fa-solid fa-envelope"></i>
                     </a>
-                    <% if (u.paidPayment) { %>
-                    <a href="/payments/receipt/<%= u.paidPayment._id %>" class="text-xs bg-gray-50 text-gray-600 border border-gray-200 px-2 py-1.5 rounded-lg hover:bg-gray-100" title="Receipt">
+                    <a href="/payments/receipt/<%= pmt._id %>" class="text-xs bg-gray-50 text-gray-600 border border-gray-200 px-2 py-1.5 rounded-lg hover:bg-gray-100" title="Receipt PDF">
                       <i class="fa-solid fa-receipt"></i>
                     </a>
-                    <% } %>
                   </div>
                 </td>
               </tr>
               <% }) } else { %>
               <tr>
-                <td colspan="6" class="px-5 py-12 text-center text-gray-400">
+                <td colspan="7" class="px-5 py-12 text-center text-gray-400">
                   <i class="fa-solid fa-id-card text-3xl mb-2 block text-gray-200"></i>
-                  No <%= status === 'all' ? '' : status %> membership requests
+                  No membership purchases yet
                 </td>
               </tr>
               <% } %>
@@ -139,42 +118,38 @@
 
       <!-- Mobile Cards -->
       <div class="sm:hidden space-y-3">
-        <% if (users && users.length > 0) { users.forEach(u => { %>
-        <div class="bg-white rounded-2xl border border-gray-100 p-4" id="mrow-mob-<%= u._id %>">
+        <% if (payments && payments.length > 0) { payments.forEach(pmt => { %>
+        <div class="bg-white rounded-2xl border border-gray-100 p-4">
           <div class="flex items-center gap-3 mb-3">
             <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-blue-700 overflow-hidden flex-shrink-0">
-              <% if (u.avatar) { %><img src="<%= u.avatar %>" class="w-full h-full object-cover"><% } else { %><%= u.name.charAt(0) %><% } %>
+              <% if (pmt.user && pmt.user.avatar) { %><img src="<%= pmt.user.avatar %>" class="w-full h-full object-cover"><% } else { %><%= pmt.user ? pmt.user.name.charAt(0) : '?' %><% } %>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-gray-800 truncate"><%= u.name %></p>
-              <p class="text-gray-400 text-xs"><%= u.alumniId || u.email %></p>
+              <p class="font-semibold text-gray-800 truncate"><%= pmt.user ? pmt.user.name : 'Unknown' %></p>
+              <p class="text-gray-400 text-xs"><%= pmt.user ? (pmt.user.alumniId || pmt.user.email) : '' %></p>
             </div>
-            <span class="text-xs font-bold px-2 py-1 rounded-full flex-shrink-0
-              <%= u.membershipStatus === 'approved' ? 'badge-life' : u.membershipStatus === 'pending' ? 'bg-amber-100 text-amber-700' : u.membershipStatus === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500' %>">
-              <%= u.membershipStatus %>
+            <span class="text-xs badge-life px-2 py-1 rounded-full font-semibold flex-shrink-0">
+              <%= pmt.planTitle || (pmt.planId && pmt.planId.title) || 'Membership' %>
             </span>
           </div>
-          <% if (u.paidPayment) { %>
-          <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-3 text-xs">
-            <span class="font-bold text-emerald-700">Payment: ₹<%= u.paidPayment.amount.toLocaleString('en-IN') %></span>
-            <span class="text-emerald-600 ml-2"><%= new Date(u.paidPayment.paidAt).toLocaleDateString('en-IN') %></span>
+          <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-3 text-xs flex items-center justify-between">
+            <span class="font-bold text-emerald-700">₹<%= pmt.amount.toLocaleString('en-IN') %></span>
+            <span class="text-emerald-600"><%= pmt.paidAt ? new Date(pmt.paidAt).toLocaleDateString('en-IN') : '-' %></span>
           </div>
-          <% } %>
-          <% if (u.membershipStatus === 'pending') { %>
+          <p class="text-xs font-mono text-gray-400 mb-3"><%= pmt.receiptNumber %></p>
           <div class="flex gap-2">
-            <button onclick="approveMem('<%= u._id %>', this)" class="flex-1 text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
-              <i class="fa-solid fa-check mr-1"></i>Approve
-            </button>
-            <button onclick="rejectMem('<%= u._id %>')" class="flex-1 text-sm bg-red-50 text-red-600 border border-red-200 font-semibold py-2.5 rounded-xl transition">
-              <i class="fa-solid fa-xmark mr-1"></i>Reject
-            </button>
+            <a href="mailto:<%= pmt.user ? pmt.user.email : '' %>" class="flex-1 text-center text-sm bg-blue-50 text-blue-600 border border-blue-200 font-semibold py-2 rounded-xl">
+              <i class="fa-solid fa-envelope mr-1"></i>Email
+            </a>
+            <a href="/payments/receipt/<%= pmt._id %>" class="flex-1 text-center text-sm bg-gray-50 text-gray-600 border border-gray-200 font-semibold py-2 rounded-xl">
+              <i class="fa-solid fa-receipt mr-1"></i>Receipt
+            </a>
           </div>
-          <% } %>
         </div>
         <% }) } else { %>
         <div class="text-center py-12 bg-white rounded-2xl border border-gray-100">
           <i class="fa-solid fa-id-card text-4xl text-gray-200 mb-3 block"></i>
-          <p class="text-gray-400 font-semibold">No membership requests</p>
+          <p class="text-gray-400 font-semibold">No membership purchases yet</p>
         </div>
         <% } %>
       </div>
@@ -182,56 +157,5 @@
     </div>
   </main>
 </div>
-
-<script>
-async function approveMem(id, btn) {
-  if (!confirm('Approve life membership for this alumni? This will also verify their account.')) return;
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Approving...';
-  try {
-    const r = await fetch(`/admin/memberships/${id}/approve`, { method: 'POST' });
-    const d = await r.json();
-    if (d.success) {
-      document.getElementById(`mrow-${id}`)?.remove();
-      document.getElementById(`mrow-mob-${id}`)?.remove();
-      // Show toast
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-5 right-5 z-50 flex items-center gap-3 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-semibold';
-      toast.innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Membership approved & email sent!</span>';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    } else {
-      alert('Error: ' + d.message);
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve';
-    }
-  } catch (err) {
-    alert('Network error: ' + err.message);
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve';
-  }
-}
-
-async function rejectMem(id) {
-  const reason = prompt('Enter rejection reason (required):');
-  if (!reason || !reason.trim()) return;
-  try {
-    const r = await fetch(`/admin/memberships/${id}/reject`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason: reason.trim() })
-    });
-    const d = await r.json();
-    if (d.success) {
-      document.getElementById(`mrow-${id}`)?.remove();
-      document.getElementById(`mrow-mob-${id}`)?.remove();
-    } else {
-      alert('Error: ' + d.message);
-    }
-  } catch (err) {
-    alert('Network error: ' + err.message);
-  }
-}
-</script>
 </body>
 </html>
