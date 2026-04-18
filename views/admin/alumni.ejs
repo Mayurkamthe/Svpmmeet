@@ -73,11 +73,11 @@
                 <td class="px-4 py-3 text-gray-400 text-xs"><%=new Date(a.createdAt).toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})%></td>
                 <td class="px-4 py-3"><div class="flex items-center gap-1">
                   <%if(!a.isVerified){%>
-                  <button onclick="doAction('approve','<%=a._id%>','<%=a.name%>',this)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs" title="Approve"><i class="fa-solid fa-check"></i></button>
-                  <button onclick="doAction('reject','<%=a._id%>','<%=a.name%>',this)" class="bg-orange-50 text-orange-700 border border-orange-200 px-2.5 py-1.5 rounded-lg text-xs" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                  <button data-action="approve" data-id="<%=a._id%>" data-name="<%=a.name%>" class="action-btn bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs" title="Approve"><i class="fa-solid fa-check"></i></button>
+                  <button data-action="reject" data-id="<%=a._id%>" data-name="<%=a.name%>" class="action-btn bg-orange-50 text-orange-700 border border-orange-200 px-2.5 py-1.5 rounded-lg text-xs" title="Reject"><i class="fa-solid fa-xmark"></i></button>
                   <%}%>
                   <a href="mailto:<%=a.email%>" class="bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs" title="Email"><i class="fa-solid fa-envelope"></i></a>
-                  <button onclick="doAction('delete','<%=a._id%>','<%=a.name%>',this)" class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                  <button data-action="delete" data-id="<%=a._id%>" data-name="<%=a.name%>" class="action-btn bg-red-50 text-red-600 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs" title="Delete"><i class="fa-solid fa-trash"></i></button>
                 </div></td>
               </tr>
               <%})}else{%>
@@ -111,11 +111,11 @@
           </div>
           <div class="flex gap-2 flex-wrap">
             <%if(!a.isVerified){%>
-            <button onclick="doAction('approve','<%=a._id%>','<%=a.name%>',this)" class="flex-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-check mr-1"></i>Approve</button>
-            <button onclick="doAction('reject','<%=a._id%>','<%=a.name%>',this)" class="flex-1 bg-orange-50 text-orange-700 border border-orange-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-xmark mr-1"></i>Reject</button>
+            <button data-action="approve" data-id="<%=a._id%>" data-name="<%=a.name%>" class="action-btn flex-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-check mr-1"></i>Approve</button>
+            <button data-action="reject" data-id="<%=a._id%>" data-name="<%=a.name%>" class="action-btn flex-1 bg-orange-50 text-orange-700 border border-orange-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-xmark mr-1"></i>Reject</button>
             <%}%>
             <a href="mailto:<%=a.email%>" class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-envelope mr-1"></i>Email</a>
-            <button onclick="doAction('delete','<%=a._id%>','<%=a.name%>',this)" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Delete</button>
+            <button data-action="delete" data-id="<%=a._id%>" data-name="<%=a.name%>" class="action-btn bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Delete</button>
           </div>
         </div>
         <%})}else{%>
@@ -143,99 +143,117 @@
     <h3 id="modal-title" class="text-lg font-bold text-gray-800 text-center mb-2"></h3>
     <p id="modal-msg" class="text-gray-500 text-sm text-center mb-6"></p>
     <div class="flex gap-3">
-      <button onclick="closeModal()" class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
+      <button id="modal-cancel" class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
       <button id="modal-confirm" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"></button>
     </div>
   </div>
 </div>
 
 <script>
-let pendingAction = null;
-let pendingBtn = null;
+(function() {
+  var pendingAction = null;
+  var pendingBtn = null;
 
-function doAction(type, id, name, btn) {
-  pendingAction = { type, id };
-  pendingBtn = btn;
-  const modal = document.getElementById('confirm-modal');
-  const icon = document.getElementById('modal-icon');
-  const title = document.getElementById('modal-title');
-  const msg = document.getElementById('modal-msg');
-  const confirmBtn = document.getElementById('modal-confirm');
+  var modal = document.getElementById('confirm-modal');
+  var icon = document.getElementById('modal-icon');
+  var title = document.getElementById('modal-title');
+  var msg = document.getElementById('modal-msg');
+  var confirmBtn = document.getElementById('modal-confirm');
+  var cancelBtn = document.getElementById('modal-cancel');
 
-  if (type === 'approve') {
-    icon.innerHTML = '<i class="fa-solid fa-check text-2xl text-emerald-600"></i>';
-    icon.style.background = '#d1fae5';
-    title.textContent = 'Approve Alumni?';
-    msg.textContent = `Approve ${name}? They will receive a confirmation email.`;
-    confirmBtn.textContent = 'Approve';
-    confirmBtn.style.background = '#059669';
-  } else if (type === 'reject') {
-    icon.innerHTML = '<i class="fa-solid fa-xmark text-2xl text-orange-600"></i>';
-    icon.style.background = '#ffedd5';
-    title.textContent = 'Reject Alumni?';
-    msg.textContent = `Reject ${name}'s registration?`;
-    confirmBtn.textContent = 'Reject';
-    confirmBtn.style.background = '#ea580c';
-  } else {
-    icon.innerHTML = '<i class="fa-solid fa-trash text-2xl text-red-600"></i>';
-    icon.style.background = '#fee2e2';
-    title.textContent = 'Delete Permanently?';
-    msg.textContent = `Delete ${name}? This cannot be undone.`;
-    confirmBtn.textContent = 'Delete';
-    confirmBtn.style.background = '#dc2626';
+  function doAction(type, id, name, btn) {
+    pendingAction = { type: type, id: id };
+    pendingBtn = btn;
+
+    if (type === 'approve') {
+      icon.innerHTML = '<i class="fa-solid fa-check text-2xl text-emerald-600"></i>';
+      icon.style.background = '#d1fae5';
+      title.textContent = 'Approve Alumni?';
+      msg.textContent = 'Approve ' + name + '? They will receive a confirmation email.';
+      confirmBtn.textContent = 'Approve';
+      confirmBtn.style.background = '#059669';
+    } else if (type === 'reject') {
+      icon.innerHTML = '<i class="fa-solid fa-xmark text-2xl text-orange-600"></i>';
+      icon.style.background = '#ffedd5';
+      title.textContent = 'Reject Alumni?';
+      msg.textContent = 'Reject ' + name + "'s registration?";
+      confirmBtn.textContent = 'Reject';
+      confirmBtn.style.background = '#ea580c';
+    } else {
+      icon.innerHTML = '<i class="fa-solid fa-trash text-2xl text-red-600"></i>';
+      icon.style.background = '#fee2e2';
+      title.textContent = 'Delete Permanently?';
+      msg.textContent = 'Delete ' + name + '? This cannot be undone.';
+      confirmBtn.textContent = 'Delete';
+      confirmBtn.style.background = '#dc2626';
+    }
+
+    modal.classList.add('show');
   }
 
-  confirmBtn.onclick = executeAction;
-  modal.classList.add('show');
-}
+  function closeModal() {
+    modal.classList.remove('show');
+    pendingAction = null;
+    pendingBtn = null;
+  }
 
-function closeModal() {
-  document.getElementById('confirm-modal').classList.remove('show');
-  pendingAction = null;
-  pendingBtn = null;
-}
+  function executeAction() {
+    if (!pendingAction) return;
+    var type = pendingAction.type;
+    var id = pendingAction.id;
+    var btn = pendingBtn;
+    closeModal();
+    if (btn) btn.disabled = true;
 
-async function executeAction() {
-  if (!pendingAction) return;
-  const { type, id } = pendingAction;
-  const btn = pendingBtn;
-  closeModal();
-  if (btn) btn.disabled = true;
-
-  try {
     if (type === 'delete') {
-      const f = document.createElement('form');
+      var f = document.createElement('form');
       f.method = 'POST';
-      f.action = `/admin/alumni/${id}`;
-      const inp = document.createElement('input');
-      inp.type = 'hidden'; inp.name = '_method'; inp.value = 'DELETE';
-      f.appendChild(inp);
+      f.action = '/admin/alumni/' + id + '?_method=DELETE';
       document.body.appendChild(f);
       f.submit();
       return;
     }
-    const r = await fetch(`/admin/alumni/${id}/${type}`, {
+
+    fetch('/admin/alumni/' + id + '/' + type, {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' }
-    });
-    const d = await r.json();
-    if (d.success) {
-      location.reload();
-    } else {
-      alert(d.message || 'Action failed');
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        location.reload();
+      } else {
+        alert(d.message || 'Action failed');
+        if (btn) btn.disabled = false;
+      }
+    })
+    .catch(function(e) {
+      alert('Network error: ' + e.message);
       if (btn) btn.disabled = false;
-    }
-  } catch(e) {
-    alert('Network error: ' + e.message);
-    if (btn) btn.disabled = false;
+    });
   }
-}
 
-// Close modal on backdrop click
-document.getElementById('confirm-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
+  // Attach click handlers to all action buttons via event delegation
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.action-btn');
+    if (btn) {
+      e.preventDefault();
+      doAction(btn.dataset.action, btn.dataset.id, btn.dataset.name, btn);
+    }
+  });
+
+  // Cancel button
+  cancelBtn.addEventListener('click', closeModal);
+
+  // Confirm button
+  confirmBtn.addEventListener('click', executeAction);
+
+  // Close modal on backdrop click
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) closeModal();
+  });
+})();
 </script>
 </body>
 </html>
