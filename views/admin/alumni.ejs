@@ -197,9 +197,9 @@ function closeModal() {
 
 async function executeAction() {
   if (!pendingAction) return;
-  closeModal();
   const { type, id } = pendingAction;
   const btn = pendingBtn;
+  closeModal();
   if (btn) btn.disabled = true;
 
   try {
