@@ -59,8 +59,11 @@
     <a href="/admin/alumni" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= p.includes('/admin/alumni') ? 'active' : '' %>" style="color:#8db0d4">
       <i class="fa-solid fa-users w-4 text-center"></i> Alumni
     </a>
-    <a href="/admin/memberships" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= p.includes('/admin/memberships') ? 'active' : '' %>" style="color:#8db0d4">
+    <a href="/admin/memberships" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= p === '/admin/memberships' ? 'active' : '' %>" style="color:#8db0d4">
       <i class="fa-solid fa-id-card w-4 text-center"></i> Memberships
+    </a>
+    <a href="/admin/membership-plans" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= p === '/admin/membership-plans' ? 'active' : '' %>" style="color:#8db0d4">
+      <i class="fa-solid fa-tags w-4 text-center"></i> Plans
     </a>
     <a href="/admin/payments" onclick="closeAdminSidebar()" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm <%= p.includes('/admin/payments') ? 'active' : '' %>" style="color:#8db0d4">
       <i class="fa-solid fa-indian-rupee-sign w-4 text-center"></i> Payments
