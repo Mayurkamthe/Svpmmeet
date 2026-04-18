@@ -65,6 +65,10 @@ const userSchema = new mongoose.Schema({
   membershipApprovedAt: Date,
   membershipRejectedAt: Date,
   membershipRejectionReason: String,
+  membershipPlanId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MembershipPlan'
+  },
 
   profile: {
     branch: {
