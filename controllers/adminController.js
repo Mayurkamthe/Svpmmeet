@@ -14,8 +14,7 @@ exports.getDashboard = async (req, res) => {
       User.countDocuments({ role: 'alumni', isVerified: false }),
       User.countDocuments({ role: 'alumni', isVerified: true }),
       Payment.aggregate([{ $match: { status: 'paid' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
-      // FIX: show ALL recent registrations, not just unverified
-      User.find({ role: 'alumni' }).sort('-createdAt').limit(6),
+      User.find({ role: 'alumni', isVerified: false }).sort('-createdAt').limit(6),
       User.find({ role: 'alumni', membershipStatus: 'pending' }).sort('-membershipAppliedAt').limit(5),
       Payment.find({ status: 'paid' }).populate('user', 'name alumniId').sort('-paidAt').limit(5),
       Event.find({ date: { $gte: new Date() }, isActive: true }).sort('date').limit(4)
