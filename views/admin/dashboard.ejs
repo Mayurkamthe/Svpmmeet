@@ -65,52 +65,40 @@
         </div>
       </div>
 
-      <!-- Alert for pending -->
-      <% if (stats.pendingAlumni > 0) { %>
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center"><i class="fa-solid fa-bell text-amber-600"></i></div>
-          <div>
-            <p class="font-bold text-amber-800"><%= stats.pendingAlumni %> alumni awaiting approval</p>
-            <p class="text-amber-600 text-xs">Review and approve new registrations</p>
-          </div>
-        </div>
-        <a href="/admin/alumni?status=pending" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm px-4 py-2 rounded-xl transition">Review Now</a>
-      </div>
-      <% } %>
+      <!-- Alert for pending — removed to avoid redundancy with Pending Approvals list below -->
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Recent Registrations -->
+        <!-- Pending Approvals -->
         <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-navy-800 flex items-center gap-2"><i class="fa-solid fa-user-clock text-amber-600"></i> Pending Approvals</h3>
-            <a href="/admin/alumni" class="text-navy-600 text-xs font-semibold hover:text-navy-800">View All</a>
+            <h3 class="font-bold flex items-center gap-2" style="color:#1e3a5f"><i class="fa-solid fa-user-clock" style="color:#d97706"></i> Pending Approvals <% if(stats.pendingAlumni>0){%><span class="text-xs font-bold px-2 py-0.5 rounded-full ml-1" style="background:#fef3c7;color:#92400e"><%= stats.pendingAlumni %></span><%}%></h3>
+            <a href="/admin/alumni?status=pending" class="text-xs font-semibold" style="color:#2d6a9f">View All</a>
           </div>
           <div class="space-y-2">
             <% if (recentAlumni && recentAlumni.length > 0) { %>
             <% recentAlumni.forEach(a => { %>
-            <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition" id="alumni-row-<%= a._id %>">
-              <div class="w-9 h-9 rounded-xl bg-navy-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <% if (a.avatar) { %><img src="<%= a.avatar %>" class="w-full h-full object-cover"><% } else { %><span class="text-navy-700 font-bold text-sm"><%= a.name.charAt(0) %></span><% } %>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-800 text-sm truncate"><%= a.name %></p>
-                <p class="text-gray-400 text-xs"><%= a.profile?.branch %> &bull; Batch <%= a.profile?.passOutYear %></p>
-              </div>
-              <div class="flex items-center gap-2 flex-shrink-0">
-                <span class="text-xs font-mono text-gray-400"><%= a.alumniId %></span>
+            <div class="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition" id="alumni-row-<%= a._id %>">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden font-bold text-sm" style="background:#dce8f3;color:#1e3a5f">
+                  <% if (a.avatar) { %><img src="<%= a.avatar %>" class="w-full h-full object-cover"><% } else { %><%= a.name.charAt(0).toUpperCase() %><% } %>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-bold text-gray-800 text-sm"><%= a.name %></p>
+                  <p class="text-xs mt-0.5" style="color:#6b7280"><%= a.profile?.branch || 'N/A' %> &bull; Batch <%= a.profile?.passOutYear || 'N/A' %></p>
+                  <p class="text-xs font-mono mt-0.5" style="color:#9ca3af"><%= a.alumniId %></p>
+                </div>
                 <% if (!a.isVerified) { %>
-                <button onclick="approveAlumni('<%= a._id %>', this)" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-2 py-1 rounded-lg transition">
+                <button onclick="approveAlumni('<%= a._id %>', this)" class="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border transition" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0">
                   <i class="fa-solid fa-check mr-1"></i>Approve
                 </button>
                 <% } else { %>
-                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-semibold"><i class="fa-solid fa-check mr-1"></i>Verified</span>
+                <span class="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl" style="background:#f0fdf4;color:#15803d"><i class="fa-solid fa-check mr-1"></i>Verified</span>
                 <% } %>
               </div>
             </div>
             <% }) %>
             <% } else { %>
-            <div class="text-center py-6 text-gray-400 text-sm"><i class="fa-solid fa-user-check text-2xl mb-2 block text-gray-200"></i>No pending approvals</div>
+            <div class="text-center py-8 text-gray-400 text-sm"><i class="fa-solid fa-user-check text-3xl mb-2 block text-gray-200"></i>No pending approvals</div>
             <% } %>
           </div>
         </div>
