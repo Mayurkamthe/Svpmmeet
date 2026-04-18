@@ -176,7 +176,8 @@ exports.applyMembership = async (req, res) => {
     });
   } catch (err) {
     console.error('Membership apply error:', err);
-    res.status(500).json({ success: false, message: 'Error creating payment order: ' + err.message });
+    const errorMsg = err.error ? err.error.description : err.message;
+    res.status(500).json({ success: false, message: 'Error creating payment order: ' + errorMsg });
   }
 };
 
