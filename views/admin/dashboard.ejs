@@ -22,7 +22,7 @@
   <% locals.currentPath = '/admin/dashboard'; %>
   <%- include('../partials/admin-sidebar') %>
 
-  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0 min-w-0">
     <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between flex-wrap gap-2 sticky top-0 z-10">
       <div>
         <h1 class="text-xl font-bold text-navy-800">Admin Dashboard</h1>
@@ -204,37 +204,93 @@
   </main>
 </div>
 
+<!-- Action Modal -->
+<div id="dash-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl shadow-xl p-6 mx-4 w-full max-w-sm">
+    <div id="dm-icon" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+    <h3 id="dm-title" class="text-lg font-bold text-gray-800 text-center mb-2"></h3>
+    <p id="dm-msg" class="text-gray-500 text-sm text-center mb-6"></p>
+    <div id="dm-input-wrap" class="mb-4 hidden"><textarea id="dm-reason" placeholder="Enter reason..." class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" rows="3"></textarea></div>
+    <div class="flex gap-3">
+      <button onclick="closeDashModal()" class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
+      <button id="dm-confirm" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"></button>
+    </div>
+  </div>
+</div>
 <script>
+let dmPending = null;
+function openDashModal(cfg) {
+  dmPending = cfg;
+  const m = document.getElementById('dash-modal');
+  document.getElementById('dm-icon').innerHTML = cfg.icon;
+  document.getElementById('dm-icon').style.background = cfg.iconBg;
+  document.getElementById('dm-title').textContent = cfg.title;
+  document.getElementById('dm-msg').textContent = cfg.msg;
+  const confirmBtn = document.getElementById('dm-confirm');
+  confirmBtn.textContent = cfg.label;
+  confirmBtn.style.background = cfg.color;
+  confirmBtn.onclick = cfg.action;
+  const inputWrap = document.getElementById('dm-input-wrap');
+  if (cfg.needsInput) { inputWrap.classList.remove('hidden'); document.getElementById('dm-reason').value=''; }
+  else { inputWrap.classList.add('hidden'); }
+  m.style.display = 'flex';
+}
+function closeDashModal() {
+  document.getElementById('dash-modal').style.display = 'none';
+  dmPending = null;
+}
+document.getElementById('dash-modal').addEventListener('click', function(e){ if(e.target===this) closeDashModal(); });
 const fetchOpts = (extra={}) => ({credentials:'same-origin',headers:{'Content-Type':'application/json'},...extra});
-async function approveAlumni(id, btn) {
-  if (!confirm('Approve this alumni?')) return;
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-  try {
-    const res = await fetch(`/admin/alumni/${id}/approve`, {method:'POST',...fetchOpts()});
-    const data = await res.json();
-    if (data.success) { btn.outerHTML = '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-semibold"><i class="fa-solid fa-check mr-1"></i>Approved</span>'; }
-    else { alert(data.message); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve'; }
-  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Approve'; }
+function approveAlumni(id, btn) {
+  openDashModal({
+    icon:'<i class="fa-solid fa-check text-2xl text-emerald-600"></i>',
+    iconBg:'#d1fae5', title:'Approve Alumni?', msg:'Approve this alumni registration?',
+    label:'Approve', color:'#059669', needsInput:false,
+    action: async () => {
+      closeDashModal();
+      btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+      try {
+        const res = await fetch(`/admin/alumni/${id}/approve`,{method:'POST',...fetchOpts()});
+        const data = await res.json();
+        if(data.success){ btn.outerHTML='<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-semibold"><i class="fa-solid fa-check mr-1"></i>Approved</span>'; }
+        else { alert(data.message); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check mr-1"></i>Approve'; }
+      } catch(e){ alert('Error: '+e.message); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-check mr-1"></i>Approve'; }
+    }
+  });
 }
-async function approveMembership(id, btn) {
-  if (!confirm('Approve this membership?')) return;
-  btn.disabled = true;
-  try {
-    const res = await fetch(`/admin/memberships/${id}/approve`, {method:'POST',...fetchOpts()});
-    const data = await res.json();
-    if (data.success) { document.getElementById(`mem-row-${id}`)?.remove(); }
-    else { alert(data.message); btn.disabled = false; }
-  } catch(e) { alert('Error: ' + e.message); btn.disabled = false; }
+function approveMembership(id, btn) {
+  openDashModal({
+    icon:'<i class="fa-solid fa-id-card text-2xl text-blue-600"></i>',
+    iconBg:'#dbeafe', title:'Approve Membership?', msg:'Approve this life membership request?',
+    label:'Approve', color:'#2563eb', needsInput:false,
+    action: async () => {
+      closeDashModal(); btn.disabled=true;
+      try {
+        const res = await fetch(`/admin/memberships/${id}/approve`,{method:'POST',...fetchOpts()});
+        const data = await res.json();
+        if(data.success){ document.getElementById(`mem-row-${id}`)?.remove(); }
+        else { alert(data.message); btn.disabled=false; }
+      } catch(e){ alert('Error: '+e.message); btn.disabled=false; }
+    }
+  });
 }
-async function rejectMembership(id) {
-  const reason = prompt('Reason for rejection:');
-  if (!reason) return;
-  try {
-    const res = await fetch(`/admin/memberships/${id}/reject`, {method:'POST',...fetchOpts(),body:JSON.stringify({reason})});
-    const data = await res.json();
-    if (data.success) document.getElementById(`mem-row-${id}`)?.remove();
-    else alert(data.message);
-  } catch(e) { alert('Error: ' + e.message); }
+function rejectMembership(id) {
+  openDashModal({
+    icon:'<i class="fa-solid fa-xmark text-2xl text-red-600"></i>',
+    iconBg:'#fee2e2', title:'Reject Membership?', msg:'Provide a reason for rejection:',
+    label:'Reject', color:'#dc2626', needsInput:true,
+    action: async () => {
+      const reason = document.getElementById('dm-reason').value.trim();
+      if(!reason){ alert('Please enter a reason.'); return; }
+      closeDashModal();
+      try {
+        const res = await fetch(`/admin/memberships/${id}/reject`,{method:'POST',...fetchOpts(),body:JSON.stringify({reason})});
+        const data = await res.json();
+        if(data.success) document.getElementById(`mem-row-${id}`)?.remove();
+        else alert(data.message);
+      } catch(e){ alert('Error: '+e.message); }
+    }
+  });
 }
 </script>
 </body>

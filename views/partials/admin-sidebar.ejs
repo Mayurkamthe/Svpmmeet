@@ -15,7 +15,7 @@
 <div id="admin-overlay" class="md:hidden fixed inset-0 z-40 hidden" style="background:rgba(0,0,0,0.6)" onclick="closeAdminSidebar()"></div>
 
 <!-- Admin Sidebar -->
-<aside id="admin-sidebar" class="w-64 min-h-screen flex flex-col flex-shrink-0 fixed md:static top-0 left-0 z-50 h-screen transition-transform duration-300 ease-in-out" style="background:#0f1e32;transform:translateX(-100%)">
+<aside id="admin-sidebar" class="w-64 flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out" style="background:#0f1e32;position:fixed;top:0;left:0;z-index:50;height:100vh;transform:translateX(-100%);min-width:256px">
 
   <!-- Brand -->
   <div class="p-5 flex items-center justify-between" style="border-bottom:1px solid rgba(255,255,255,0.1)">
@@ -97,7 +97,7 @@
 
 <style>
   @media (min-width: 768px) {
-    #admin-sidebar { transform: translateX(0) !important; position: static !important; height: 100vh; }
+    #admin-sidebar { transform: translateX(0) !important; position: relative !important; height: 100vh; z-index: auto !important; }
     #admin-overlay { display: none !important; }
   }
   .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #fff !important; }

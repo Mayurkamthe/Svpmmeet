@@ -4,57 +4,238 @@
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title><%= title %></title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',400:'#5f8dbe',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}}}}}</script>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>body{font-family:'Source Sans 3',system-ui,sans-serif;}.gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}.sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}.sidebar-link:hover{background:rgba(255,255,255,0.1);}.badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}</style>
+  <style>
+    body{font-family:'Source Sans 3',system-ui,sans-serif;}
+    .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.1);}
+    /* Mobile card layout */
+    @media(max-width:767px){
+      .alumni-table{display:none;}
+      .alumni-cards{display:block;}
+    }
+    @media(min-width:768px){
+      .alumni-table{display:table;}
+      .alumni-cards{display:none;}
+    }
+    /* Confirm modal */
+    #confirm-modal{display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.5)}
+    #confirm-modal.show{display:flex;}
+  </style>
 </head>
 <body class="bg-gray-100">
-<div class="flex min-h-screen md:min-h-screen">
+<div class="flex min-h-screen">
   <% locals.currentPath = '/admin/alumni'; %>
   <%- include('../partials/admin-sidebar') %>
-  <main class="flex-1 overflow-y-auto pt-14 md:pt-0">
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0 min-w-0">
     <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-      <div><h1 class="text-xl font-bold text-navy-800" style="color:#1e3a5f">Manage Alumni</h1><p class="text-gray-500 text-sm"><%= total %> alumni total</p></div>
-      <a href="/admin/export/alumni" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> Export</a>
+      <div><h1 class="text-xl font-bold" style="color:#1e3a5f">Manage Alumni</h1><p class="text-gray-500 text-sm"><%= total %> alumni total</p></div>
+      <a href="/admin/export/alumni" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Export</span></a>
     </div>
-    <div class="p-4 sm:p-6">
-      <form method="GET" action="/admin/alumni" class="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-search text-xs"></i></span><input type="text" name="search" value="<%= query.search||'' %>" placeholder="Name, email, ID..." class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/></div>
-          <select name="branch" class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Branches</option><% branches.forEach(b=>{%><option value="<%=b%>" <%=query.branch===b?'selected':''%>><%=b%></option><%})%></select>
-          <select name="year" class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Years</option><% years.forEach(y=>{%><option value="<%=y%>" <%=query.year==y?'selected':''%>><%=y%></option><%})%></select>
-          <select name="status" class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Status</option><option value="verified" <%=query.status==='verified'?'selected':''%>>Verified</option><option value="pending" <%=query.status==='pending'?'selected':''%>>Pending</option></select>
-          <div class="flex gap-2"><button type="submit" class="flex-1 text-white font-semibold py-2.5 rounded-xl text-sm transition" style="background:#1e3a5f">Search</button><a href="/admin/alumni" class="px-3 py-2.5 border border-gray-200 rounded-xl text-gray-400 hover:bg-gray-50 text-sm"><i class="fa-solid fa-xmark"></i></a></div>
+    <div class="p-3 sm:p-6">
+      <!-- Search Form -->
+      <form method="GET" action="/admin/alumni" class="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="col-span-2 sm:col-span-1 relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="fa-solid fa-search text-xs"></i></span><input type="text" name="search" value="<%= query.search||'' %>" placeholder="Name, email, ID..." class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/></div>
+          <select name="branch" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Branches</option><% branches.forEach(b=>{%><option value="<%=b%>" <%=query.branch===b?'selected':''%>><%=b%></option><%})%></select>
+          <select name="year" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Years</option><% years.forEach(y=>{%><option value="<%=y%>" <%=query.year==y?'selected':''%>><%=y%></option><%})%></select>
+          <select name="status" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="">All Status</option><option value="verified" <%=query.status==='verified'?'selected':''%>>Verified</option><option value="pending" <%=query.status==='pending'?'selected':''%>>Pending</option></select>
+          <div class="col-span-2 sm:col-span-4 flex gap-2">
+            <button type="submit" class="flex-1 text-white font-semibold py-2.5 rounded-xl text-sm" style="background:#1e3a5f">Search</button>
+            <a href="/admin/alumni" class="px-4 py-2.5 border border-gray-200 rounded-xl text-gray-400 hover:bg-gray-50 text-sm flex items-center"><i class="fa-solid fa-xmark"></i></a>
+          </div>
         </div>
       </form>
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+
+      <!-- DESKTOP TABLE -->
+      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hidden md:block">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead><tr class="bg-gray-50 border-b border-gray-100"><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">ID</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Branch/Year</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Membership</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Status</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Joined</th><th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Actions</th></tr></thead>
+            <thead><tr class="bg-gray-50 border-b border-gray-100">
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni</th>
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">ID</th>
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">Branch/Year</th>
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">Membership</th>
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">Status</th>
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">Joined</th>
+              <th class="text-left px-4 py-3.5 text-gray-500 font-bold text-xs uppercase">Actions</th>
+            </tr></thead>
             <tbody class="divide-y divide-gray-50">
               <% if(alumni&&alumni.length>0){alumni.forEach(a=>{%>
               <tr class="hover:bg-gray-50">
-                <td class="px-5 py-4"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl overflow-hidden bg-blue-50 flex items-center justify-center flex-shrink-0 font-bold text-blue-700"><% if(a.avatar){%><img src="<%=a.avatar%>" class="w-full h-full object-cover"><%}else{%><%=a.name.charAt(0)%><%}%></div><div><p class="font-semibold text-gray-800"><%=a.name%></p><p class="text-gray-400 text-xs"><%=a.email%></p></div></div></td>
-                <td class="px-5 py-4 font-mono text-xs text-gray-500"><%=a.alumniId%></td>
-                <td class="px-5 py-4"><p class="text-gray-700 text-xs font-semibold"><%=a.profile&&a.profile.branch?a.profile.branch.split(' ')[0]:'N/A'%></p><p class="text-gray-400 text-xs"><%=a.profile&&a.profile.passOutYear?a.profile.passOutYear:'N/A'%></p></td>
-                <td class="px-5 py-4"><span class="text-xs font-bold px-2.5 py-1 rounded-full <%=a.membershipStatus==='approved'?'badge-life':a.membershipStatus==='pending'?'bg-amber-100 text-amber-700':'bg-gray-100 text-gray-500'%>"><%=a.membershipStatus==='approved'?'Life Member':a.membershipStatus==='pending'?'Pending':'None'%></span></td>
-                <td class="px-5 py-4"><span class="text-xs font-bold px-2.5 py-1 rounded-full <%=a.isVerified?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'%>"><%=a.isVerified?'Verified':'Pending'%></span></td>
-                <td class="px-5 py-4 text-gray-400 text-xs"><%=new Date(a.createdAt).toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})%></td>
-                <td class="px-5 py-4"><div class="flex items-center gap-1.5"><%if(!a.isVerified){%><button onclick="approveAlumni('<%=a._id%>',this)" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-1.5 rounded-lg" title="Approve"><i class="fa-solid fa-check"></i></button><button onclick="rejectAlumni('<%=a._id%>',this)" class="text-xs bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 px-2 py-1.5 rounded-lg" title="Reject"><i class="fa-solid fa-xmark"></i></button><%}%><a href="mailto:<%=a.email%>" class="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1.5 rounded-lg" title="Email"><i class="fa-solid fa-envelope"></i></a><button onclick="deleteAlumni('<%=a._id%>')" class="text-xs bg-red-50 text-red-600 border border-red-200 px-2 py-1.5 rounded-lg" title="Delete"><i class="fa-solid fa-trash"></i></button></div></td>
+                <td class="px-4 py-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl overflow-hidden bg-blue-50 flex items-center justify-center flex-shrink-0 font-bold text-blue-700"><% if(a.avatar){%><img src="<%=a.avatar%>" class="w-full h-full object-cover"><%}else{%><%=a.name.charAt(0)%><%}%></div><div><p class="font-semibold text-gray-800"><%=a.name%></p><p class="text-gray-400 text-xs"><%=a.email%></p></div></div></td>
+                <td class="px-4 py-3 font-mono text-xs text-gray-500"><%=a.alumniId%></td>
+                <td class="px-4 py-3"><p class="text-gray-700 text-xs font-semibold"><%=a.profile&&a.profile.branch?a.profile.branch.split(' ')[0]:'N/A'%></p><p class="text-gray-400 text-xs"><%=a.profile&&a.profile.passOutYear?a.profile.passOutYear:'N/A'%></p></td>
+                <td class="px-4 py-3"><span class="text-xs font-bold px-2.5 py-1 rounded-full <%=a.membershipStatus==='approved'?'bg-yellow-100 text-yellow-700':a.membershipStatus==='pending'?'bg-amber-100 text-amber-700':'bg-gray-100 text-gray-500'%>"><%=a.membershipStatus==='approved'?'Life Member':a.membershipStatus==='pending'?'Pending':'None'%></span></td>
+                <td class="px-4 py-3"><span class="text-xs font-bold px-2.5 py-1 rounded-full <%=a.isVerified?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'%>"><%=a.isVerified?'Verified':'Pending'%></span></td>
+                <td class="px-4 py-3 text-gray-400 text-xs"><%=new Date(a.createdAt).toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})%></td>
+                <td class="px-4 py-3"><div class="flex items-center gap-1">
+                  <%if(!a.isVerified){%>
+                  <button onclick="doAction('approve','<%=a._id%>','<%=a.name%>',this)" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-xs" title="Approve"><i class="fa-solid fa-check"></i></button>
+                  <button onclick="doAction('reject','<%=a._id%>','<%=a.name%>',this)" class="bg-orange-50 text-orange-700 border border-orange-200 px-2.5 py-1.5 rounded-lg text-xs" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                  <%}%>
+                  <a href="mailto:<%=a.email%>" class="bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs" title="Email"><i class="fa-solid fa-envelope"></i></a>
+                  <button onclick="doAction('delete','<%=a._id%>','<%=a.name%>',this)" class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                </div></td>
               </tr>
-              <%})}else{%><tr><td colspan="7" class="px-5 py-12 text-center text-gray-400"><i class="fa-solid fa-users text-3xl mb-2 block text-gray-200"></i>No alumni found</td></tr><%}%>
+              <%})}else{%>
+              <tr><td colspan="7" class="px-5 py-12 text-center text-gray-400"><i class="fa-solid fa-users text-3xl mb-2 block text-gray-200"></i>No alumni found</td></tr>
+              <%}%>
             </tbody>
           </table>
         </div>
-        <% if(totalPages>1){%><div class="px-5 py-4 border-t border-gray-50 flex items-center justify-between"><span class="text-sm text-gray-500">Page <%=page%> of <%=totalPages%></span><div class="flex gap-2"><%if(page>1){%><a href="?page=<%=page-1%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50">Prev</a><%}%><%for(let i=Math.max(1,page-2);i<=Math.min(totalPages,page+2);i++){%><a href="?page=<%=i%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 rounded-lg text-xs font-semibold <%=i===page?'text-white':'border border-gray-200 text-gray-600 hover:bg-gray-50'%>" <%=i===page?'style="background:#1e3a5f"':''%>><%=i%></a><%}%><%if(page<totalPages){%><a href="?page=<%=page+1%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50">Next</a><%}%></div></div><%}%>
+        <% if(totalPages>1){%><div class="px-5 py-4 border-t border-gray-50 flex items-center justify-between"><span class="text-sm text-gray-500">Page <%=page%> of <%=totalPages%></span><div class="flex gap-2"><%if(page>1){%><a href="?page=<%=page-1%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600">Prev</a><%}%><%for(let i=Math.max(1,page-2);i<=Math.min(totalPages,page+2);i++){%><a href="?page=<%=i%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 rounded-lg text-xs font-semibold <%=i===page?'text-white':'border border-gray-200 text-gray-600 hover:bg-gray-50'%>" <%=i===page?'style="background:#1e3a5f"':''%>><%=i%></a><%}%><%if(page<totalPages){%><a href="?page=<%=page+1%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600">Next</a><%}%></div></div><%}%>
+      </div>
+
+      <!-- MOBILE CARDS -->
+      <div class="md:hidden space-y-3">
+        <% if(alumni&&alumni.length>0){alumni.forEach(a=>{%>
+        <div class="bg-white rounded-2xl border border-gray-100 p-4">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-11 h-11 rounded-xl overflow-hidden bg-blue-50 flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-lg"><% if(a.avatar){%><img src="<%=a.avatar%>" class="w-full h-full object-cover"><%}else{%><%=a.name.charAt(0)%><%}%></div>
+              <div class="min-w-0">
+                <p class="font-bold text-gray-800 truncate"><%=a.name%></p>
+                <p class="text-gray-400 text-xs truncate"><%=a.email%></p>
+                <p class="text-gray-500 text-xs font-mono mt-0.5"><%=a.alumniId%></p>
+              </div>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 <%=a.isVerified?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'%>"><%=a.isVerified?'Verified':'Pending'%></span>
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
+            <span><i class="fa-solid fa-building mr-1"></i><%=a.profile&&a.profile.branch?a.profile.branch.split(' ')[0]:'N/A'%> <%=a.profile&&a.profile.passOutYear?a.profile.passOutYear:''%></span>
+            <span><i class="fa-solid fa-id-card mr-1"></i><%=a.membershipStatus==='approved'?'Life Member':a.membershipStatus==='pending'?'Membership Pending':'No Membership'%></span>
+            <span><i class="fa-solid fa-calendar mr-1"></i><%=new Date(a.createdAt).toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})%></span>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <%if(!a.isVerified){%>
+            <button onclick="doAction('approve','<%=a._id%>','<%=a.name%>',this)" class="flex-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-check mr-1"></i>Approve</button>
+            <button onclick="doAction('reject','<%=a._id%>','<%=a.name%>',this)" class="flex-1 bg-orange-50 text-orange-700 border border-orange-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-xmark mr-1"></i>Reject</button>
+            <%}%>
+            <a href="mailto:<%=a.email%>" class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-envelope mr-1"></i>Email</a>
+            <button onclick="doAction('delete','<%=a._id%>','<%=a.name%>',this)" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Delete</button>
+          </div>
+        </div>
+        <%})}else{%>
+        <div class="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400"><i class="fa-solid fa-users text-3xl mb-2 block text-gray-200"></i>No alumni found</div>
+        <%}%>
+        <!-- Mobile pagination -->
+        <% if(totalPages>1){%>
+        <div class="flex items-center justify-between bg-white rounded-2xl border border-gray-100 px-4 py-3">
+          <span class="text-sm text-gray-500">Page <%=page%> of <%=totalPages%></span>
+          <div class="flex gap-2">
+            <%if(page>1){%><a href="?page=<%=page-1%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600">Prev</a><%}%>
+            <%if(page<totalPages){%><a href="?page=<%=page+1%>&search=<%=query.search||''%>&branch=<%=query.branch||''%>&status=<%=query.status||''%>" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600">Next</a><%}%>
+          </div>
+        </div>
+        <%}%>
       </div>
     </div>
   </main>
 </div>
+
+<!-- Confirm Modal (replaces confirm() dialog which can be blocked on mobile) -->
+<div id="confirm-modal">
+  <div class="bg-white rounded-2xl shadow-xl p-6 mx-4 w-full max-w-sm">
+    <div id="modal-icon" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+    <h3 id="modal-title" class="text-lg font-bold text-gray-800 text-center mb-2"></h3>
+    <p id="modal-msg" class="text-gray-500 text-sm text-center mb-6"></p>
+    <div class="flex gap-3">
+      <button onclick="closeModal()" class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
+      <button id="modal-confirm" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"></button>
+    </div>
+  </div>
+</div>
+
 <script>
-async function approveAlumni(id,btn){if(!confirm('Approve this alumni?'))return;btn.disabled=true;try{const r=await fetch(`/admin/alumni/${id}/approve`,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'}});const d=await r.json();if(d.success)location.reload();else{alert(d.message);btn.disabled=false;}}catch(e){alert('Error: '+e.message);btn.disabled=false;}}
-async function rejectAlumni(id,btn){if(!confirm('Reject this alumni?'))return;btn.disabled=true;try{const r=await fetch(`/admin/alumni/${id}/reject`,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'}});const d=await r.json();if(d.success)location.reload();else{alert(d.message);btn.disabled=false;}}catch(e){alert('Error: '+e.message);btn.disabled=false;}}
-async function deleteAlumni(id){if(!confirm('Permanently delete this alumni?'))return;const f=document.createElement('form');f.method='POST';f.action=`/admin/alumni/${id}`;const inp=document.createElement('input');inp.type='hidden';inp.name='_method';inp.value='DELETE';f.appendChild(inp);document.body.appendChild(f);f.submit();}
+let pendingAction = null;
+let pendingBtn = null;
+
+function doAction(type, id, name, btn) {
+  pendingAction = { type, id };
+  pendingBtn = btn;
+  const modal = document.getElementById('confirm-modal');
+  const icon = document.getElementById('modal-icon');
+  const title = document.getElementById('modal-title');
+  const msg = document.getElementById('modal-msg');
+  const confirmBtn = document.getElementById('modal-confirm');
+
+  if (type === 'approve') {
+    icon.innerHTML = '<i class="fa-solid fa-check text-2xl text-emerald-600"></i>';
+    icon.style.background = '#d1fae5';
+    title.textContent = 'Approve Alumni?';
+    msg.textContent = `Approve ${name}? They will receive a confirmation email.`;
+    confirmBtn.textContent = 'Approve';
+    confirmBtn.style.background = '#059669';
+  } else if (type === 'reject') {
+    icon.innerHTML = '<i class="fa-solid fa-xmark text-2xl text-orange-600"></i>';
+    icon.style.background = '#ffedd5';
+    title.textContent = 'Reject Alumni?';
+    msg.textContent = `Reject ${name}'s registration?`;
+    confirmBtn.textContent = 'Reject';
+    confirmBtn.style.background = '#ea580c';
+  } else {
+    icon.innerHTML = '<i class="fa-solid fa-trash text-2xl text-red-600"></i>';
+    icon.style.background = '#fee2e2';
+    title.textContent = 'Delete Permanently?';
+    msg.textContent = `Delete ${name}? This cannot be undone.`;
+    confirmBtn.textContent = 'Delete';
+    confirmBtn.style.background = '#dc2626';
+  }
+
+  confirmBtn.onclick = executeAction;
+  modal.classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('show');
+  pendingAction = null;
+  pendingBtn = null;
+}
+
+async function executeAction() {
+  if (!pendingAction) return;
+  closeModal();
+  const { type, id } = pendingAction;
+  const btn = pendingBtn;
+  if (btn) btn.disabled = true;
+
+  try {
+    if (type === 'delete') {
+      const f = document.createElement('form');
+      f.method = 'POST';
+      f.action = `/admin/alumni/${id}`;
+      const inp = document.createElement('input');
+      inp.type = 'hidden'; inp.name = '_method'; inp.value = 'DELETE';
+      f.appendChild(inp);
+      document.body.appendChild(f);
+      f.submit();
+      return;
+    }
+    const r = await fetch(`/admin/alumni/${id}/${type}`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const d = await r.json();
+    if (d.success) {
+      location.reload();
+    } else {
+      alert(d.message || 'Action failed');
+      if (btn) btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Network error: ' + e.message);
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('confirm-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
 </script>
 </body>
 </html>
