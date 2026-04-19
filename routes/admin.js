@@ -21,6 +21,8 @@ router.get('/export/alumni',      ctrl.exportAlumni);
 router.get('/events',             ctrl.getEvents);
 router.post('/events',            ctrl.createEvent);
 router.delete('/events/:id',      ctrl.deleteEvent);
+router.get('/events/:id/registrations',                    ctrl.getEventRegistrations);
+router.post('/events/:id/registrations/:regId/status',     ctrl.updateRegistrationStatus);
 router.get('/announcements',      ctrl.getAnnouncements);
 router.post('/announcements',     ctrl.createAnnouncement);
 router.delete('/announcements/:id', ctrl.deleteAnnouncement);

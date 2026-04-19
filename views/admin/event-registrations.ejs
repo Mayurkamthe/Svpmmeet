@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{navy:{50:'#f0f4f9',100:'#dce8f3',200:'#b9d0e7',300:'#8db0d4',400:'#5f8dbe',500:'#3a70a8',600:'#2d6a9f',700:'#1e3a5f',800:'#172d4a',900:'#0f1e32'},gold:{400:'#f5c842',500:'#e8b820',600:'#c8a31a'}}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body{font-family:'Source Sans 3',system-ui,sans-serif;}
+    .gradient-header{background:linear-gradient(135deg,#0f1e32 0%,#1e3a5f 50%,#2d6a9f 100%);}
+    .sidebar-link.active{background:rgba(255,255,255,0.15);border-left:3px solid #f5c842;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.1);}
+    .badge-life{background:linear-gradient(135deg,#f5c842,#c8a31a);color:#1a1a1a;}
+  </style>
+</head>
+<body class="bg-gray-100">
+<div class="flex min-h-screen">
+  <% locals.currentPath = '/admin/events'; %>
+  <%- include('../partials/admin-sidebar') %>
+
+  <main class="flex-1 overflow-y-auto pt-14 md:pt-0 min-w-0">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-10">
+      <div class="flex items-center gap-3 flex-wrap">
+        <a href="/admin/events" class="text-gray-400 hover:text-navy-700 transition">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="flex-1">
+          <h1 class="text-xl font-bold" style="color:#1e3a5f"><%= event.title %></h1>
+          <p class="text-gray-500 text-sm">
+            <i class="fa-solid fa-calendar mr-1"></i>
+            <%= new Date(event.date).toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) %>
+            &nbsp;·&nbsp;
+            <i class="fa-solid fa-location-dot mr-1"></i><%= event.venue %>
+          </p>
+        </div>
+        <!-- Summary stats -->
+        <div class="flex items-center gap-3">
+          <div class="text-center px-4 py-2 bg-navy-50 rounded-xl">
+            <p class="text-navy-800 font-bold text-xl"><%= registrations.length %></p>
+            <p class="text-gray-500 text-xs">Registered</p>
+          </div>
+          <div class="text-center px-4 py-2 bg-emerald-50 rounded-xl">
+            <p class="text-emerald-700 font-bold text-xl"><%= registrations.filter(r => r.status === 'attended').length %></p>
+            <p class="text-gray-500 text-xs">Attended</p>
+          </div>
+          <div class="text-center px-4 py-2 bg-red-50 rounded-xl">
+            <p class="text-red-600 font-bold text-xl"><%= registrations.filter(r => r.status === 'cancelled').length %></p>
+            <p class="text-gray-500 text-xs">Cancelled</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 sm:p-6">
+
+      <% if (locals.success_msg && success_msg.length > 0) { %>
+      <div class="mb-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm">
+        <i class="fa-solid fa-circle-check"></i><span><%= success_msg %></span>
+      </div>
+      <% } %>
+
+      <% if (!registrations || registrations.length === 0) { %>
+      <!-- Empty state -->
+      <div class="text-center py-20 bg-white rounded-2xl border border-gray-100">
+        <i class="fa-solid fa-users text-5xl text-gray-200 mb-4 block"></i>
+        <h3 class="text-gray-500 font-semibold text-lg">No registrations yet</h3>
+        <p class="text-gray-400 text-sm mt-1">Alumni who register for this event will appear here.</p>
+      </div>
+
+      <% } else { %>
+
+      <!-- Desktop Table -->
+      <div class="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">#</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Alumni ID</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Branch / Batch</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Membership</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Registered On</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Status</th>
+                <th class="text-left px-5 py-3.5 text-gray-500 font-bold text-xs uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <% registrations.forEach((reg, idx) => { %>
+              <tr class="hover:bg-gray-50" id="row-<%= reg._id %>">
+                <td class="px-5 py-4 text-gray-400 text-xs"><%= idx + 1 %></td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 font-bold text-blue-700 text-sm overflow-hidden">
+                      <% if (reg.user && reg.user.avatar) { %>
+                        <img src="<%= reg.user.avatar %>" class="w-full h-full object-cover">
+                      <% } else { %>
+                        <%= reg.user ? reg.user.name.charAt(0).toUpperCase() : '?' %>
+                      <% } %>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-gray-800"><%= reg.user ? reg.user.name : 'Unknown' %></p>
+                      <p class="text-gray-400 text-xs"><%= reg.user ? reg.user.email : '' %></p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4 font-mono text-xs text-gray-500">
+                  <%= reg.user ? (reg.user.alumniId || '—') : '—' %>
+                </td>
+                <td class="px-5 py-4 text-xs text-gray-500">
+                  <% if (reg.user && reg.user.profile) { %>
+                    <p><%= reg.user.profile.branch || '—' %></p>
+                    <p class="text-gray-400"><%= reg.user.profile.passOutYear || '' %></p>
+                  <% } else { %>—<% } %>
+                </td>
+                <td class="px-5 py-4">
+                  <% if (reg.user && reg.user.membershipStatus === 'approved') { %>
+                  <span class="text-xs badge-life px-2.5 py-1 rounded-full font-semibold">
+                    <i class="fa-solid fa-star mr-1 text-xs"></i>Member
+                  </span>
+                  <% } else { %>
+                  <span class="text-xs text-gray-400">—</span>
+                  <% } %>
+                </td>
+                <td class="px-5 py-4 text-gray-500 text-xs">
+                  <%= new Date(reg.registeredAt).toLocaleDateString('en-IN', {year:'numeric', month:'short', day:'numeric'}) %>
+                  <br>
+                  <span class="text-gray-400"><%= new Date(reg.registeredAt).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}) %></span>
+                </td>
+                <td class="px-5 py-4" id="status-<%= reg._id %>">
+                  <span class="text-xs font-bold px-2.5 py-1 rounded-full
+                    <%= reg.status === 'attended' ? 'bg-emerald-100 text-emerald-700' :
+                        reg.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                        'bg-blue-100 text-blue-700' %>">
+                    <%= reg.status.charAt(0).toUpperCase() + reg.status.slice(1) %>
+                  </span>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-1.5">
+                    <button onclick="updateStatus('<%= reg._id %>', '<%= event._id %>', 'attended', this)"
+                      class="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition
+                             <%= reg.status === 'attended' ? 'bg-emerald-600 text-white cursor-default' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200' %>"
+                      <%= reg.status === 'attended' ? 'disabled' : '' %>>
+                      <i class="fa-solid fa-circle-check mr-1"></i>Attended
+                    </button>
+                    <button onclick="updateStatus('<%= reg._id %>', '<%= event._id %>', 'registered', this)"
+                      class="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition
+                             <%= reg.status === 'registered' ? 'bg-blue-600 text-white cursor-default' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200' %>"
+                      <%= reg.status === 'registered' ? 'disabled' : '' %>>
+                      <i class="fa-solid fa-clock mr-1"></i>Registered
+                    </button>
+                    <button onclick="updateStatus('<%= reg._id %>', '<%= event._id %>', 'cancelled', this)"
+                      class="text-xs font-semibold px-2.5 py-1.5 rounded-lg transition
+                             <%= reg.status === 'cancelled' ? 'bg-red-600 text-white cursor-default' : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' %>"
+                      <%= reg.status === 'cancelled' ? 'disabled' : '' %>>
+                      <i class="fa-solid fa-xmark mr-1"></i>Cancel
+                    </button>
+                    <a href="mailto:<%= reg.user ? reg.user.email : '' %>"
+                       class="text-xs bg-gray-50 text-gray-600 border border-gray-200 px-2 py-1.5 rounded-lg hover:bg-gray-100"
+                       title="Email">
+                      <i class="fa-solid fa-envelope"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobile Cards -->
+      <div class="sm:hidden space-y-3">
+        <% registrations.forEach((reg, idx) => { %>
+        <div class="bg-white rounded-2xl border border-gray-100 p-4" id="card-<%= reg._id %>">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-blue-700 overflow-hidden flex-shrink-0">
+              <% if (reg.user && reg.user.avatar) { %>
+                <img src="<%= reg.user.avatar %>" class="w-full h-full object-cover">
+              <% } else { %>
+                <%= reg.user ? reg.user.name.charAt(0).toUpperCase() : '?' %>
+              <% } %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-800 truncate"><%= reg.user ? reg.user.name : 'Unknown' %></p>
+              <p class="text-gray-400 text-xs"><%= reg.user ? (reg.user.alumniId || reg.user.email) : '' %></p>
+            </div>
+            <span id="status-mob-<%= reg._id %>" class="text-xs font-bold px-2 py-1 rounded-full flex-shrink-0
+              <%= reg.status === 'attended' ? 'bg-emerald-100 text-emerald-700' :
+                  reg.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                  'bg-blue-100 text-blue-700' %>">
+              <%= reg.status.charAt(0).toUpperCase() + reg.status.slice(1) %>
+            </span>
+          </div>
+          <div class="text-xs text-gray-500 mb-3 flex flex-wrap gap-3">
+            <% if (reg.user && reg.user.profile) { %>
+            <span><i class="fa-solid fa-graduation-cap mr-1 text-navy-400"></i><%= reg.user.profile.branch || '—' %> <%= reg.user.profile.passOutYear || '' %></span>
+            <% } %>
+            <span><i class="fa-solid fa-clock mr-1 text-navy-400"></i><%= new Date(reg.registeredAt).toLocaleDateString('en-IN', {month:'short', day:'numeric', year:'numeric'}) %></span>
+            <% if (reg.user && reg.user.membershipStatus === 'approved') { %>
+            <span class="badge-life px-2 py-0.5 rounded-full font-semibold text-xs"><i class="fa-solid fa-star mr-1 text-xs"></i>Member</span>
+            <% } %>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="updateStatus('<%= reg._id %>', '<%= event._id %>', 'attended', this)"
+              class="flex-1 text-xs font-semibold py-2 rounded-xl transition
+                     <%= reg.status === 'attended' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' %>">
+              <i class="fa-solid fa-circle-check mr-1"></i>Attended
+            </button>
+            <button onclick="updateStatus('<%= reg._id %>', '<%= event._id %>', 'registered', this)"
+              class="flex-1 text-xs font-semibold py-2 rounded-xl transition
+                     <%= reg.status === 'registered' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 border border-blue-200' %>">
+              <i class="fa-solid fa-clock mr-1"></i>Pending
+            </button>
+            <button onclick="updateStatus('<%= reg._id %>', '<%= event._id %>', 'cancelled', this)"
+              class="flex-1 text-xs font-semibold py-2 rounded-xl transition
+                     <%= reg.status === 'cancelled' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-600 border border-red-200' %>">
+              <i class="fa-solid fa-xmark mr-1"></i>Cancel
+            </button>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+
+      <% } %>
+    </div>
+  </main>
+</div>
+
+<script>
+async function updateStatus(regId, eventId, newStatus, clickedBtn) {
+  try {
+    const r = await fetch(`/admin/events/${eventId}/registrations/${regId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const d = await r.json();
+    if (!d.success) { alert('Error: ' + d.message); return; }
+
+    // Update status badge — desktop
+    const statusCell = document.getElementById('status-' + regId);
+    if (statusCell) {
+      const labels = { attended: 'Attended', registered: 'Registered', cancelled: 'Cancelled' };
+      const colors = {
+        attended: 'bg-emerald-100 text-emerald-700',
+        registered: 'bg-blue-100 text-blue-700',
+        cancelled: 'bg-red-100 text-red-700'
+      };
+      statusCell.innerHTML = `<span class="text-xs font-bold px-2.5 py-1 rounded-full ${colors[newStatus]}">${labels[newStatus]}</span>`;
+    }
+    // Update status badge — mobile
+    const mobStatus = document.getElementById('status-mob-' + regId);
+    if (mobStatus) {
+      const colors = { attended:'bg-emerald-100 text-emerald-700', registered:'bg-blue-100 text-blue-700', cancelled:'bg-red-100 text-red-700' };
+      mobStatus.className = `text-xs font-bold px-2 py-1 rounded-full flex-shrink-0 ${colors[newStatus]}`;
+      mobStatus.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+    }
+
+    // Re-style all three action buttons in the same row
+    const row = document.getElementById('row-' + regId) || document.getElementById('card-' + regId);
+    if (row) {
+      row.querySelectorAll('button[onclick*="updateStatus"]').forEach(btn => {
+        const s = btn.getAttribute('onclick').match(/'(\w+)'\s*\)/)?.[1];
+        if (!s) return;
+        const isNow = s === newStatus;
+        const styleMap = {
+          attended: { on: 'bg-emerald-600 text-white cursor-default', off: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200' },
+          registered: { on: 'bg-blue-600 text-white cursor-default', off: 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200' },
+          cancelled: { on: 'bg-red-600 text-white cursor-default', off: 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' }
+        };
+        const base = 'text-xs font-semibold px-2.5 py-1.5 rounded-lg transition';
+        btn.className = `${base} ${isNow ? styleMap[s].on : styleMap[s].off}`;
+        btn.disabled = isNow;
+      });
+    }
+
+    // Toast
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-navy-700 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 z-50 text-sm font-semibold';
+    toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> Status updated to <strong>${newStatus}</strong>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+
+  } catch (err) {
+    alert('Network error: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>

@@ -434,3 +434,44 @@ exports.deleteMembershipPlan = async (req, res) => {
     res.redirect('/admin/membership-plans');
   }
 };
+
+// GET /admin/events/:id/registrations
+exports.getEventRegistrations = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id).lean();
+    if (!event) {
+      req.flash('error_msg', 'Event not found');
+      return res.redirect('/admin/events');
+    }
+
+    const registrations = await EventRegistration.find({ event: event._id })
+      .populate('user', 'name email alumniId phone avatar profile membershipStatus')
+      .sort('-registeredAt')
+      .lean();
+
+    res.render('admin/event-registrations', {
+      title: `Registrations — ${event.title}`,
+      event,
+      registrations
+    });
+  } catch (err) {
+    console.error('getEventRegistrations error:', err);
+    req.flash('error_msg', 'Error loading registrations');
+    res.redirect('/admin/events');
+  }
+};
+
+// POST /admin/events/:id/registrations/:regId/status
+exports.updateRegistrationStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['registered', 'attended', 'cancelled'].includes(status)) {
+      return res.json({ success: false, message: 'Invalid status' });
+    }
+    await EventRegistration.findByIdAndUpdate(req.params.regId, { status });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('updateRegistrationStatus error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
